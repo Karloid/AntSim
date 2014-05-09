@@ -11,6 +11,7 @@ public class Ant {
     private Point position;
     private float rotation;
     private Action action;
+    private AntDestination distination;
 
     public Ant(int x, int y, MyGame context, Nest nest) {
         position = new Point(x, y);
@@ -19,16 +20,12 @@ public class Ant {
         moveBehaviour = new AntMoveBehaviour();
         moveBehaviour.setAnt(this);
         moveBehaviour.setContext(context);
-
+        setDestination(AntDestination.FROM_NEST);
     }
-
 
     public void update() {
         moveBehaviour.update();
-
     }
-
-
 
     public Point getPosition() {
         return position;
@@ -64,5 +61,17 @@ public class Ant {
 
     public MoveBehaviour getMoveBehaviour() {
         return moveBehaviour;
+    }
+
+    public AntDestination getDestination() {
+        return distination;
+    }
+
+    public void setDestination(AntDestination destination) {
+        this.distination = destination;
+    }
+
+    public Nest getNest() {
+        return nest;
     }
 }

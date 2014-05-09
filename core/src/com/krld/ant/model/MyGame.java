@@ -5,7 +5,6 @@ import com.krld.ant.GameManager;
 import com.krld.ant.MyInputProcessor;
 import com.krld.ant.WorldRenderer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -14,8 +13,9 @@ import java.util.Vector;
  */
 public class MyGame {
     private static final long UPDATE_DELAY = 10;
-    public static final int INITIAL_ANTS_COUNT = 100;
-    public static final float INITIAL_PHEROMON = 5f;
+    public static final int INITIAL_ANTS_COUNT = 1;
+    public static final float INITIAL_PHEROMON = 1f;
+    private static final double DECREASE_PHEROMON_VOLUME = 0.5f;
     private final WorldRenderer worldRenderer;
     private final Vector<Nest> nests;
     private MyInputProcessor inputProcessor;
@@ -27,7 +27,8 @@ public class MyGame {
     private int width;
     private int height;
     private int[][] obstacleMap;
-    private double[][] pheromonMap;
+    private double[][] pheromonMapFromNest;
+    private double[][] pheromonMapToNest;
 
 
     public MyGame() {
@@ -123,10 +124,36 @@ public class MyGame {
 
     public void initMap() {
         obstacleMap = new int[width][height];
-        pheromonMap = new double[width][height];
+        pheromonMapFromNest = new double[width][height];
+        pheromonMapToNest = new double[width][height];
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++) {
-                pheromonMap[x][y] = INITIAL_PHEROMON;
+                pheromonMapFromNest[x][y] = INITIAL_PHEROMON;
+                pheromonMapToNest[x][y] = INITIAL_PHEROMON;
+            }
+
+
+    }
+
+    public double[][] getPheromonMapFromNest() {
+        return pheromonMapFromNest;
+    }
+
+    public double[][] getPheromonMapToNest() {
+        return pheromonMapToNest;
+    }
+
+    public void setPheromonMapToNest(double[][] pheromonMapToNest) {
+        this.pheromonMapToNest = pheromonMapToNest;
+    }
+
+    public void decreasePheromonMap(double[][] pheromonMap) {
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++) {
+                pheromonMap[x][y] -= DECREASE_PHEROMON_VOLUME;
+                if (pheromonMap[x][y] < INITIAL_PHEROMON) {
+                    pheromonMap[x][y] = INITIAL_PHEROMON;
+                }
             }
     }
 
@@ -188,9 +215,9 @@ public class MyGame {
         } else if (direction == Direction.EAST) {
             newPoint.setX(newPoint.getX() + 1);
         } else if (direction == Direction.SOUTH) {
-            newPoint.setY(newPoint.getY() + 1);
-        } else if (direction == Direction.NORTH) {
             newPoint.setY(newPoint.getY() - 1);
+        } else if (direction == Direction.NORTH) {
+            newPoint.setY(newPoint.getY() + 1);
         }
     }
 

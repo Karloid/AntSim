@@ -1,7 +1,9 @@
 package com.krld.ant.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Andrey on 5/8/2014.
@@ -22,6 +24,137 @@ public class AntMoveBehaviour implements MoveBehaviour {
 
     @Override
     public void update() {
+        checkDestination();
+        //  calcRandomDirection();
+
+        calAntDirection();
+
+        calcRotation();
+    }
+
+    private void checkDestination() {
+        if (ant.getDestination() == AntDestination.TO_NEST) {
+            if (ant.getNest().getPosition().equals(ant.getPosition())) {
+                wayPointEarned();
+            }
+        } else if (ant.getDestination() == AntDestination.FROM_NEST)
+
+        {
+            for (WayPoint wayPoint : context.getWayPoints()) {
+                if (wayPoint.getPosition().equals(ant.getPosition())) {
+                    wayPointEarned();
+                }
+            }
+        }
+    }
+
+    private void wayPointEarned() {
+        double[][] pheromonMap;
+        if (ant.getDestination() == AntDestination.FROM_NEST) {
+            ant.setDestination(AntDestination.TO_NEST);
+            pheromonMap = context.getPheromonMapFromNest();
+        } else {
+            pheromonMap = context.getPheromonMapToNest();
+        }
+        for (Point point : way) {
+            pheromonMap[point.getX()][point.getY()] += 0.8;
+            try {
+                pheromonMap[point.getX() + 1][point.getY()] += 0.4;
+                pheromonMap[point.getX() - 1][point.getY()] += 0.4;
+                pheromonMap[point.getX()][point.getY() - 1] += 0.4;
+                pheromonMap[point.getX()][point.getY() + 1] += 0.4;
+                pheromonMap[point.getX() + 1][point.getY() + 1] += 0.2;
+                pheromonMap[point.getX() - 1][point.getY() - 1] += 0.2;
+                pheromonMap[point.getX() + 1][point.getY() - 1] += 0.2;
+                pheromonMap[point.getX() - 1][point.getY() - 1] += 0.2;
+
+                pheromonMap[point.getX() - 2][point.getY() - 2] += 0.2;
+                pheromonMap[point.getX() - 2][point.getY() - 1] += 0.2;
+                pheromonMap[point.getX() - 2][point.getY() - 0] += 0.2;
+                pheromonMap[point.getX() - 2][point.getY() + 1] += 0.2;
+                pheromonMap[point.getX() - 2][point.getY() + 2] += 0.2;
+
+                pheromonMap[point.getX() + 2][point.getY() - 2] += 0.2;
+                pheromonMap[point.getX() + 2][point.getY() - 1] += 0.2;
+                pheromonMap[point.getX() + 2][point.getY() - 0] += 0.2;
+                pheromonMap[point.getX() + 2][point.getY() + 1] += 0.2;
+                pheromonMap[point.getX() + 2][point.getY() + 2] += 0.2;
+
+
+                pheromonMap[point.getX() - 1][point.getY() - 2] += 0.2;
+                pheromonMap[point.getX() - 1][point.getY() + 2] += 0.2;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        context.decreasePheromonMap(pheromonMap);
+        way = new ArrayList<Point>();
+    }
+
+    //TODO check can move
+    private void calAntDirection() {
+        ant.setAction(Action.MOVE);
+        double[][] pheromonMap;
+        if (ant.getDestination() == AntDestination.FROM_NEST) {
+            pheromonMap = context.getPheromonMapFromNest();
+        } else {
+            pheromonMap = context.getPheromonMapToNest();
+        }
+        HashMap<Direction, Double> directionsMaps = new HashMap<Direction, Double>();
+        Direction direction = Direction.NORTH;
+        addDirectionIfCan(pheromonMap, directionsMaps, direction);
+        direction = Direction.WEST;
+        addDirectionIfCan(pheromonMap, directionsMaps, direction);
+        direction = Direction.EAST;
+        addDirectionIfCan(pheromonMap, directionsMaps, direction);
+        direction = Direction.SOUTH;
+        addDirectionIfCan(pheromonMap, directionsMaps, direction);
+
+        if (directionsMaps.size() == 0) {
+            calcRandomDirection();
+            System.out.println("calc random way");
+            return;
+        }
+        Double sum = 0d;
+        for (Map.Entry<Direction, Double> entry : directionsMaps.entrySet()) {
+            sum += entry.getValue();
+        }
+        HashMap<Direction, Probabilty> directionsProbability = new HashMap<Direction, Probabilty>();
+        double lastProbability = 0;
+        for (Map.Entry<Direction, Double> entry : directionsMaps.entrySet()) {
+            Double probability = entry.getValue() / sum;
+            directionsProbability.put(entry.getKey(), new Probabilty(lastProbability, lastProbability + probability));
+            lastProbability += probability;
+        }
+
+        double random = Math.random();
+        for (Map.Entry<Direction, Probabilty> entry : directionsProbability.entrySet()) {
+            if (entry.getValue().in(random)) {
+                ant.setDirection(entry.getKey());
+                Point point = ant.getPosition().getCopy();
+                context.movePointOnDirection(ant.getDirection(), point);
+                way.add(point);
+                return;
+            }
+        }
+
+        System.out.println("calc random way");
+        calcRandomDirection();
+    }
+
+    private void addDirectionIfCan(double[][] pheromonMap, HashMap<Direction, Double> directions, Direction direction) {
+        Point point = ant.getPosition().getCopy();
+        context.movePointOnDirection(direction, point);
+        if (!way.contains(point)) {
+            try {
+                directions.put(direction, pheromonMap[point.getX()][point.getY()]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void calcRandomDirection() {
         ant.setAction(Action.MOVE);
 
         randomDirection();
@@ -38,8 +171,6 @@ public class AntMoveBehaviour implements MoveBehaviour {
             }
         }
         way.add(newPoint);
-
-        calcRotation();
     }
 
     @Override
@@ -74,5 +205,26 @@ public class AntMoveBehaviour implements MoveBehaviour {
 
     public List<Point> getWay() {
         return way;
+    }
+
+    private class Probabilty {
+        private final double start;
+        private final double end;
+
+        public Probabilty(double start, double end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public boolean in(double random) {
+            if (random >= start && random <= end) {
+                return true;
+            }
+            return false;
+        }
+
+        public String getDelta() {
+            return (end - start) + "";
+        }
     }
 }
