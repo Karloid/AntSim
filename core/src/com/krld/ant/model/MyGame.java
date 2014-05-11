@@ -14,10 +14,10 @@ import java.util.Vector;
  */
 public class MyGame {
     private static final long UPDATE_DELAY = 10;
-    public static final int INITIAL_ANTS_COUNT = 100;
+    public static final int INITIAL_ANTS_COUNT = 5000;
     public static final float INITIAL_PHEROMON = 1f;
-    private static final double DECREASE_PHEROMON_VOLUME = 0.7f;
-    private static final int INITAL_WAY_POINTS_OFFSET = 130;
+    private static final double DECREASE_PHEROMON_VOLUME = 0.1f;
+    private static final int INITAL_WAY_POINTS_OFFSET = 60;
     private final WorldRenderer worldRenderer;
     private final Vector<Nest> nests;
     private MyInputProcessor inputProcessor;

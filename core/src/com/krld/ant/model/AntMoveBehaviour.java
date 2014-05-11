@@ -1,6 +1,5 @@
 package com.krld.ant.model;
 
-import javax.print.attribute.standard.Destination;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.Map;
  * Created by Andrey on 5/8/2014.
  */
 public class AntMoveBehaviour implements MoveBehaviour {
+    private static final double MOVE_COST = 1;
     private Ant ant;
     private MyGame context;
     private List<Point> way;
@@ -62,8 +62,8 @@ public class AntMoveBehaviour implements MoveBehaviour {
             pheromonMap = context.getPheromonMapToNest();
         }
         for (Point point : way) {
-            pheromonMap[point.getX()][point.getY()] += 0.8;
             try {
+                pheromonMap[point.getX()][point.getY()] += 0.8;
                 pheromonMap[point.getX() + 1][point.getY()] += 0.4;
                 pheromonMap[point.getX() - 1][point.getY()] += 0.4;
                 pheromonMap[point.getX()][point.getY() - 1] += 0.4;
@@ -97,7 +97,6 @@ public class AntMoveBehaviour implements MoveBehaviour {
     }
 
 
-
     //TODO check can move
     private void calAntDirection() {
         ant.setAction(Action.MOVE);
@@ -107,7 +106,7 @@ public class AntMoveBehaviour implements MoveBehaviour {
         } else {
             pheromonMap = context.getPheromonMapToNest();
         }
-        HashMap<Direction, Double> directionsMaps = new HashMap<Direction, Double>();
+        HashMap<Direction, DirectionValues> directionsMaps = new HashMap<Direction, DirectionValues>();
         Direction direction = Direction.NORTH;
         addDirectionIfCan(pheromonMap, directionsMaps, direction);
         direction = Direction.WEST;
@@ -119,17 +118,34 @@ public class AntMoveBehaviour implements MoveBehaviour {
 
         if (directionsMaps.size() == 0) {
             calcRandomDirection();
-         //   System.out.println("calc random way");
+            //   System.out.println("calc random way");
             return;
         }
+        Double minHeuristik = null;
+        Direction minDirection = null;
+        for (Map.Entry<Direction, DirectionValues> entry : directionsMaps.entrySet()) {
+            if (minHeuristik == null || minHeuristik > entry.getValue().getHeuristik()) {
+                minHeuristik = entry.getValue().getHeuristik();
+                minDirection = entry.getKey();
+            }
+        }
+        for (Map.Entry<Direction, DirectionValues> entry : directionsMaps.entrySet()) {
+            if (!entry.getKey().equals(minDirection)) {
+                entry.getValue().setHeuristik(0d);
+            }
+        }
         Double sum = 0d;
-        for (Map.Entry<Direction, Double> entry : directionsMaps.entrySet()) {
-            sum += entry.getValue();
+        for (Map.Entry<Direction, DirectionValues> entry : directionsMaps.entrySet()) {
+            sum += entry.getValue().getFuncValue();
+            if (minHeuristik == null || minHeuristik < entry.getValue().getHeuristik()) {
+                minHeuristik = entry.getValue().getHeuristik();
+                minDirection = entry.getKey();
+            }
         }
         HashMap<Direction, Probabilty> directionsProbability = new HashMap<Direction, Probabilty>();
         double lastProbability = 0;
-        for (Map.Entry<Direction, Double> entry : directionsMaps.entrySet()) {
-            Double probability = entry.getValue() / sum;
+        for (Map.Entry<Direction, DirectionValues> entry : directionsMaps.entrySet()) {
+            Double probability = entry.getValue().getFuncValue() / sum;
             directionsProbability.put(entry.getKey(), new Probabilty(lastProbability, lastProbability + probability));
             lastProbability += probability;
         }
@@ -145,20 +161,48 @@ public class AntMoveBehaviour implements MoveBehaviour {
             }
         }
 
-     //   System.out.println("calc random way");
+        //   System.out.println("calc random way");
         calcRandomDirection();
     }
 
-    private void addDirectionIfCan(double[][] pheromonMap, HashMap<Direction, Double> directions, Direction direction) {
+    private void addDirectionIfCan(double[][] pheromonMap, HashMap<Direction, DirectionValues> directions, Direction direction) {
         Point point = ant.getPosition().getCopy();
         context.movePointOnDirection(direction, point);
         if (!way.contains(point)) {
             try {
-                directions.put(direction, pheromonMap[point.getX()][point.getY()]);
+                double pheromonValue = pheromonMap[point.getX()][point.getY()];
+                double heuristik = calcHeuristik(point);
+                // heuristik = heuristik / (heuristik / pheromonValue) * 10;
+                heuristik = heuristik / 17;
+                directions.put(direction, new DirectionValues(pheromonValue, heuristik, point));
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private double calcHeuristik(Point point) {
+        Double minDistantce = null;
+        if (ant.getDestination().equals(AntDestination.FROM_NEST)) {
+            for (WayPoint wayPoint : context.getWayPoints()) {
+                if (minDistantce == null || getManhattanDistance(point, wayPoint.getPosition()) < minDistantce) {
+                    minDistantce = getManhattanDistance(point, wayPoint.getPosition());
+                }
+            }
+        } else if (ant.getDestination().equals(AntDestination.TO_NEST)) {
+            for (Nest nest : context.getNests()) {
+                if (minDistantce == null || getManhattanDistance(point, nest.getPosition()) < minDistantce) {
+                    minDistantce = getManhattanDistance(point, nest.getPosition());
+                }
+            }
+        }
+        return minDistantce;
+    }
+
+    private Double getManhattanDistance(Point position, Point position1) {
+        double dx = Math.abs(position.getX() - position1.getX());
+        double dy = Math.abs(position.getY() - position1.getY());
+        return MOVE_COST * (dx + dy);
     }
 
     private void calcRandomDirection() {
@@ -232,6 +276,34 @@ public class AntMoveBehaviour implements MoveBehaviour {
 
         public String getDelta() {
             return (end - start) + "";
+        }
+    }
+
+    private class DirectionValues {
+        private final double pheromonLevel;
+        private double heuristik;
+        private final Point point;
+
+        public DirectionValues(double pheromonLevel, double heuristik, Point point) {
+            this.pheromonLevel = pheromonLevel;
+            this.heuristik = heuristik;
+            this.point = point;
+        }
+
+        public Double getFuncValue() {
+            return pheromonLevel + heuristik;
+        }
+
+        public double getPheromonLevel() {
+            return pheromonLevel;
+        }
+
+        public double getHeuristik() {
+            return heuristik;
+        }
+
+        public void setHeuristik(double heuristik) {
+            this.heuristik = heuristik;
         }
     }
 }

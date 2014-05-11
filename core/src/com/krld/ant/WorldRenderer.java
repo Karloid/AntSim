@@ -17,12 +17,12 @@ import java.util.HashMap;
  */
 public class WorldRenderer {
     public static final int ANT_SIZE = 4;
-    public static final float UPDATE_PHEROMON_MAP_RATIO = 0.99f;
+    public static final float UPDATE_PHEROMON_MAP_RATIO = 0.9f;
     private static final boolean SHOW_ANTS_WAYS = false;
     public static final String DOT_TEXTURE_KEY = "dot";
     private static final int NEST_SIZE = 8;
     private static final boolean DRAW_RECT_ANTS = true;
-    public static final float MIN_LEVEL = 0.4f;
+    public static final float MIN_LEVEL = 0.3f;
     private MyGame game;
     private HashMap<String, TextureRegion> textures;
     private ShapeRenderer renderer;
@@ -43,27 +43,7 @@ public class WorldRenderer {
         drawPheromonOverTexture(batch);
         try {
 
-            if (DRAW_RECT_ANTS) {
-                batch.end();
-                renderer.begin(ShapeRenderer.ShapeType.Filled);
-                renderer.setColor(Color.BLUE);
-                for (Ant ant : game.getAnts()) {
-                    renderer.rect(ant.getPosition().getX(), ant.getPosition().getY(), 1, 1);
-                }
-                renderer.end();
-                batch.begin();
-            } else {
-                for (Ant ant : game.getAnts()) {
-                    String key = ant.getClass().getSimpleName();
-                    batch.draw(textures.get(key), ant.getPosition().getX() - ANT_SIZE / 2, ant.getPosition().getY() - ANT_SIZE / 2, ANT_SIZE / 2, ANT_SIZE / 2, ANT_SIZE, ANT_SIZE, 1, 1, ant.getRotation());
-                    if (SHOW_ANTS_WAYS) {
-                        AntMoveBehaviour moveBehaviour = (AntMoveBehaviour) ant.getMoveBehaviour();
-                        for (Point point : moveBehaviour.getWay()) {
-                            batch.draw(textures.get(DOT_TEXTURE_KEY), point.getX(), point.getY());
-                        }
-                    }
-                }
-            }
+            drawAnts(batch);
             for (Nest nest : game.getNests()) {
                 String key = nest.getClass().getSimpleName();
                 batch.draw(textures.get(key), nest.getPosition().getX() - NEST_SIZE / 2, nest.getPosition().getY() - NEST_SIZE / 2);
@@ -81,6 +61,35 @@ public class WorldRenderer {
         }
     }
 
+    private void drawAnts(SpriteBatch batch) {
+        if (DRAW_RECT_ANTS) {
+            batch.end();
+            renderer.begin(ShapeRenderer.ShapeType.Filled);
+
+            for (Ant ant : game.getAnts()) {
+                if (ant.getDestination() == AntDestination.FROM_NEST) {
+                    renderer.setColor(Color.BLUE);
+                } else {
+                    renderer.setColor(Color.RED);
+                }
+                renderer.rect(ant.getPosition().getX(), ant.getPosition().getY(), 1, 1);
+            }
+            renderer.end();
+            batch.begin();
+        } else {
+            for (Ant ant : game.getAnts()) {
+                String key = ant.getClass().getSimpleName();
+                batch.draw(textures.get(key), ant.getPosition().getX() - ANT_SIZE / 2, ant.getPosition().getY() - ANT_SIZE / 2, ANT_SIZE / 2, ANT_SIZE / 2, ANT_SIZE, ANT_SIZE, 1, 1, ant.getRotation());
+                if (SHOW_ANTS_WAYS) {
+                    AntMoveBehaviour moveBehaviour = (AntMoveBehaviour) ant.getMoveBehaviour();
+                    for (Point point : moveBehaviour.getWay()) {
+                        batch.draw(textures.get(DOT_TEXTURE_KEY), point.getX(), point.getY());
+                    }
+                }
+            }
+        }
+    }
+
     private void drawPheromonOverTexture(SpriteBatch batch) {
         if (Math.random() > UPDATE_PHEROMON_MAP_RATIO) {
 
@@ -89,6 +98,9 @@ public class WorldRenderer {
             for (int x = 0; x < game.getWidth(); x++) {
                 for (int y = 0; y < game.getHeight(); y++) {
                     float level = (float) (pheromonMap[x][y] / game.getMaxPheromonLevelFromNest());
+                    if (pheromonMap[x][y] == game.INITIAL_PHEROMON) {
+                        level = 0;
+                    }
                     if (level > 1) {
                         level = 1;
                     }
@@ -97,7 +109,7 @@ public class WorldRenderer {
                     }
                     Color newColor = new Color(1f - level, 1f - level, 1f - level, 1f);
                     pheromonPixMap.setColor(newColor);
-                    pheromonPixMap.drawPixel(x, y);
+                    pheromonPixMap.drawPixel(x, game.getHeight() - y);
                     //  renderer.setColor(newColor);
                     //  renderer.rect(x, y, 1, 1);
 
@@ -114,11 +126,14 @@ public class WorldRenderer {
         double[][] pheromonMap = game.getPheromonMapFromNest();
         for (int x = 0; x < game.getWidth(); x++) {
             for (int y = 0; y < game.getHeight(); y++) {
-                float level = (float) (pheromonMap[x][y] / game.getMaxPheromonLevelFromNest());
+                float level = (float) ((pheromonMap[x][y] - game.INITIAL_PHEROMON) / game.getMaxPheromonLevelFromNest());
+                if (pheromonMap[x][y] == game.INITIAL_PHEROMON) {
+                    level = 0;
+                }
                 if (level > 1) {
                     level = 1;
                 }
-                if (level != 0 && level < MIN_LEVEL) {
+                if (level != 0 && level < MIN_LEVEL && level > 0.01f) {
                     level = MIN_LEVEL;
                 }
                 Color newColor = new Color(1f - level, 1f - level, 1f - level, 1f);
@@ -153,7 +168,7 @@ public class WorldRenderer {
 
     private void initPheromonPixMap() {
         pheromonPixMap = new Pixmap(game.getWidth(), game.getHeight(), Pixmap.Format.RGBA8888);
-        pheromonPixMap.setColor(Color.RED);
+        pheromonPixMap.setColor(Color.WHITE);
         pheromonPixMap.fillRectangle(0, 0, game.getWidth(), game.getHeight());
         pheromonTexture = new Texture(pheromonPixMap, Pixmap.Format.RGB888, false);
     }
