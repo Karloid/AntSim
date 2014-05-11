@@ -1,5 +1,6 @@
 package com.krld.ant.model;
 
+import javax.print.attribute.standard.Destination;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ public class AntMoveBehaviour implements MoveBehaviour {
         if (ant.getDestination() == AntDestination.TO_NEST) {
             if (ant.getNest().getPosition().equals(ant.getPosition())) {
                 wayPointEarned();
+                ant.getNest().antArrive(ant);
             }
         } else if (ant.getDestination() == AntDestination.FROM_NEST)
 
@@ -43,6 +45,7 @@ public class AntMoveBehaviour implements MoveBehaviour {
             for (WayPoint wayPoint : context.getWayPoints()) {
                 if (wayPoint.getPosition().equals(ant.getPosition())) {
                     wayPointEarned();
+                    wayPoint.antArrive(ant);
                 }
             }
         }
@@ -51,9 +54,11 @@ public class AntMoveBehaviour implements MoveBehaviour {
     private void wayPointEarned() {
         double[][] pheromonMap;
         if (ant.getDestination() == AntDestination.FROM_NEST) {
+            context.calcMaxLevelMap(ant.getDestination());
             ant.setDestination(AntDestination.TO_NEST);
             pheromonMap = context.getPheromonMapFromNest();
         } else {
+            ant.setDestination(AntDestination.FROM_NEST);
             pheromonMap = context.getPheromonMapToNest();
         }
         for (Point point : way) {
@@ -91,6 +96,8 @@ public class AntMoveBehaviour implements MoveBehaviour {
         way = new ArrayList<Point>();
     }
 
+
+
     //TODO check can move
     private void calAntDirection() {
         ant.setAction(Action.MOVE);
@@ -112,7 +119,7 @@ public class AntMoveBehaviour implements MoveBehaviour {
 
         if (directionsMaps.size() == 0) {
             calcRandomDirection();
-            System.out.println("calc random way");
+         //   System.out.println("calc random way");
             return;
         }
         Double sum = 0d;
@@ -138,7 +145,7 @@ public class AntMoveBehaviour implements MoveBehaviour {
             }
         }
 
-        System.out.println("calc random way");
+     //   System.out.println("calc random way");
         calcRandomDirection();
     }
 

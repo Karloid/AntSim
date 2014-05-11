@@ -32,7 +32,7 @@ public class GameView extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         game.draw(batch);
-        font.draw(batch, "fps: " + Gdx.graphics.getFramesPerSecond(), 10, 770);
+        font.draw(batch, "fps: " + Gdx.graphics.getFramesPerSecond(), 10, game.getHeight() - 10);
         batch.end();
     }
 

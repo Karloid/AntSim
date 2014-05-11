@@ -6,9 +6,11 @@ package com.krld.ant.model;
  */
 public class Nest {
     private Point position;
+    private int arriveCount;
 
     public Nest(int x, int y) {
         this.position = new Point(x, y);
+        arriveCount = 0;
     }
 
     public Point getPosition() {
@@ -17,5 +19,13 @@ public class Nest {
 
     public void setPosition(Point position) {
         this.position = position;
+    }
+
+    public void antArrive(Ant ant) {
+        arriveCount++;
+    }
+
+    public int getArriveCount() {
+        return arriveCount;
     }
 }

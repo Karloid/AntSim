@@ -32,7 +32,7 @@ public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
             boolean safe = true;
             game.createAnt(x, GameManager.HEIGHT - y, safe);
             System.out.println("touch down: " + x + " : y: " + y);
-        } else if (button == Input.Buttons.RIGHT) {
+        } else /*if (button == Input.Buttons.RIGHT)*/ {
             boolean safe = true;
             game.createWayPoint(x, GameManager.HEIGHT - y, safe);
         }

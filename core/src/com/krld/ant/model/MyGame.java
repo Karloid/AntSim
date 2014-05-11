@@ -5,6 +5,7 @@ import com.krld.ant.GameManager;
 import com.krld.ant.MyInputProcessor;
 import com.krld.ant.WorldRenderer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -13,9 +14,10 @@ import java.util.Vector;
  */
 public class MyGame {
     private static final long UPDATE_DELAY = 10;
-    public static final int INITIAL_ANTS_COUNT = 1;
+    public static final int INITIAL_ANTS_COUNT = 100;
     public static final float INITIAL_PHEROMON = 1f;
-    private static final double DECREASE_PHEROMON_VOLUME = 0.5f;
+    private static final double DECREASE_PHEROMON_VOLUME = 0.7f;
+    private static final int INITAL_WAY_POINTS_OFFSET = 130;
     private final WorldRenderer worldRenderer;
     private final Vector<Nest> nests;
     private MyInputProcessor inputProcessor;
@@ -29,9 +31,13 @@ public class MyGame {
     private int[][] obstacleMap;
     private double[][] pheromonMapFromNest;
     private double[][] pheromonMapToNest;
+    private double maxPheromonLevelFromNest = INITIAL_PHEROMON;
+    private double maxPheromonLevelToNest = INITIAL_PHEROMON;
 
 
-    public MyGame() {
+    public MyGame(int width, int height) {
+        this.width = width;
+        this.height = height;
         inputProcessor = new MyInputProcessor();
         inputProcessor.setGame(this);
 
@@ -43,7 +49,15 @@ public class MyGame {
         wayPoints = new Vector<WayPoint>();
 
         createAnts(INITIAL_ANTS_COUNT);
+        createWayPoints(INITAL_WAY_POINTS_OFFSET);
 
+    }
+
+    private void createWayPoints(int initalWayPointsOffset) {
+        for (int x = 0; x < width / initalWayPointsOffset; x++)
+            for (int y = 0; y < height / initalWayPointsOffset; y++) {
+                createWayPoint(x * initalWayPointsOffset, y * initalWayPointsOffset, false);
+            }
     }
 
     private void createAnts(int n) {
@@ -157,6 +171,37 @@ public class MyGame {
             }
     }
 
+    public void calcMaxLevelMap(AntDestination destination) {
+        double[][] pheromonMap;
+        if (destination == AntDestination.FROM_NEST) {
+            pheromonMap = getPheromonMapFromNest();
+        } else if (destination == AntDestination.TO_NEST) {
+            pheromonMap = getPheromonMapToNest();
+        } else {
+            pheromonMap = getPheromonMapFromNest();
+        }
+        double max = 0;
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++) {
+                if (pheromonMap[x][y] > max) {
+                    max = pheromonMap[x][y];
+                }
+            }
+        if (destination == AntDestination.FROM_NEST) {
+            maxPheromonLevelFromNest = max;
+        } else if (destination == AntDestination.TO_NEST) {
+            maxPheromonLevelToNest = max;
+        } else {
+            maxPheromonLevelFromNest = max;
+        }
+
+
+    }
+
+    public double getMaxPheromonLevelFromNest() {
+        return maxPheromonLevelFromNest;
+    }
+
     private class GameLoopThread extends Thread {
         @Override
         public void run() {
@@ -169,6 +214,7 @@ public class MyGame {
                 e.printStackTrace();
             }
         }
+
     }
 
     private void update() {
@@ -183,6 +229,14 @@ public class MyGame {
         for (Ant ant : ants) {
             ant.update();
         }
+
+        List<WayPoint> waypointsToRemove = new ArrayList<WayPoint>();
+        for (WayPoint wayPoint : wayPoints) {
+            if (wayPoint.empty()) {
+                waypointsToRemove.add(wayPoint);
+            }
+        }
+        wayPoints.removeAll(waypointsToRemove);
 
         applyUnitMove();
     }
