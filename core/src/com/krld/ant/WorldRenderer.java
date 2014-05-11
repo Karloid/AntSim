@@ -2,6 +2,7 @@ package com.krld.ant;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -16,6 +17,7 @@ import java.util.HashMap;
  */
 public class WorldRenderer {
     public static final int ANT_SIZE = 4;
+    public static final float UPDATE_PHEROMON_MAP_RATIO = 0.99f;
     private static final boolean SHOW_ANTS_WAYS = false;
     public static final String DOT_TEXTURE_KEY = "dot";
     private static final int NEST_SIZE = 8;
@@ -25,6 +27,8 @@ public class WorldRenderer {
     private HashMap<String, TextureRegion> textures;
     private ShapeRenderer renderer;
     private BitmapFont font;
+    private Pixmap pheromonPixMap;
+    private Texture pheromonTexture;
 
     public void setGame(MyGame game) {
         this.game = game;
@@ -35,7 +39,8 @@ public class WorldRenderer {
     }
 
     public void draw(SpriteBatch batch) {
-        drawPheromon(batch);
+        // drawPheromon(batch);
+        drawPheromonOverTexture(batch);
         try {
 
             if (DRAW_RECT_ANTS) {
@@ -76,13 +81,38 @@ public class WorldRenderer {
         }
     }
 
+    private void drawPheromonOverTexture(SpriteBatch batch) {
+        if (Math.random() > UPDATE_PHEROMON_MAP_RATIO) {
+
+
+            double[][] pheromonMap = game.getPheromonMapFromNest();
+            for (int x = 0; x < game.getWidth(); x++) {
+                for (int y = 0; y < game.getHeight(); y++) {
+                    float level = (float) (pheromonMap[x][y] / game.getMaxPheromonLevelFromNest());
+                    if (level > 1) {
+                        level = 1;
+                    }
+                    if (level != 0 && level < MIN_LEVEL) {
+                        level = MIN_LEVEL;
+                    }
+                    Color newColor = new Color(1f - level, 1f - level, 1f - level, 1f);
+                    pheromonPixMap.setColor(newColor);
+                    pheromonPixMap.drawPixel(x, y);
+                    //  renderer.setColor(newColor);
+                    //  renderer.rect(x, y, 1, 1);
+
+                }
+            }
+            pheromonTexture = new Texture(pheromonPixMap, Pixmap.Format.RGB888, false);
+        }
+        batch.draw(pheromonTexture, 1f / 2f, game.getWidth() / game.getHeight() / 2f);
+    }
+
     private void drawPheromon(SpriteBatch batch) {
-        batch.end();
-        renderer.begin(ShapeRenderer.ShapeType.Filled);
+        //    batch.end();
+        //   renderer.begin(ShapeRenderer.ShapeType.Filled);
         double[][] pheromonMap = game.getPheromonMapFromNest();
         for (int x = 0; x < game.getWidth(); x++) {
-            Color lastColor = null;
-            Integer startX = null;
             for (int y = 0; y < game.getHeight(); y++) {
                 float level = (float) (pheromonMap[x][y] / game.getMaxPheromonLevelFromNest());
                 if (level > 1) {
@@ -92,22 +122,16 @@ public class WorldRenderer {
                     level = MIN_LEVEL;
                 }
                 Color newColor = new Color(1f - level, 1f - level, 1f - level, 1f);
-                if (lastColor == null || !lastColor.equals(newColor)) {
-                    if (lastColor == null) {
-                        startX = 0;
-                        lastColor = newColor;
-                    }
-                    renderer.setColor(lastColor);
-                    renderer.rect(startX, y, x - startX, 1);
-                    startX = x;
-                    lastColor = newColor;
-                }
+                pheromonPixMap.setColor(newColor);
+                pheromonPixMap.drawPixel(x, y);
+                //  renderer.setColor(newColor);
+                //  renderer.rect(x, y, 1, 1);
 
             }
         }
-
-        renderer.end();
-        batch.begin();
+        pheromonTexture = new Texture(pheromonPixMap, Pixmap.Format.RGB888, false);
+        // renderer.end();
+        //batch.begin();
     }
 
     public void init() {
@@ -123,6 +147,15 @@ public class WorldRenderer {
                 Gdx.files.internal("rotorBoyShadow.png"), false);
         font.setColor(Color.WHITE);
         font.scale(0.1f);
+
+        initPheromonPixMap();
+    }
+
+    private void initPheromonPixMap() {
+        pheromonPixMap = new Pixmap(game.getWidth(), game.getHeight(), Pixmap.Format.RGBA8888);
+        pheromonPixMap.setColor(Color.RED);
+        pheromonPixMap.fillRectangle(0, 0, game.getWidth(), game.getHeight());
+        pheromonTexture = new Texture(pheromonPixMap, Pixmap.Format.RGB888, false);
     }
 
     private TextureRegion loadTextureRegion(String fileName, int width, int height) {
