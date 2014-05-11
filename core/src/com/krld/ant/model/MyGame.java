@@ -14,10 +14,10 @@ import java.util.Vector;
  */
 public class MyGame {
     private static final long UPDATE_DELAY = 10;
-    public static final int INITIAL_ANTS_COUNT = 5000;
+    public static final int INITIAL_ANTS_COUNT = 1300;
     public static final float INITIAL_PHEROMON = 1f;
     private static final double DECREASE_PHEROMON_VOLUME = 0.1f;
-    private static final int INITAL_WAY_POINTS_OFFSET = 60;
+    private static final int INITAL_WAY_POINTS_OFFSET = 30;
     private final WorldRenderer worldRenderer;
     private final Vector<Nest> nests;
     private MyInputProcessor inputProcessor;
@@ -33,6 +33,7 @@ public class MyGame {
     private double[][] pheromonMapToNest;
     private double maxPheromonLevelFromNest = INITIAL_PHEROMON;
     private double maxPheromonLevelToNest = INITIAL_PHEROMON;
+    private boolean stopedUpdate;
 
 
     public MyGame(int width, int height) {
@@ -50,13 +51,16 @@ public class MyGame {
 
         createAnts(INITIAL_ANTS_COUNT);
         createWayPoints(INITAL_WAY_POINTS_OFFSET);
+        setStopedUpdate(false);
 
     }
 
     private void createWayPoints(int initalWayPointsOffset) {
         for (int x = 0; x < width / initalWayPointsOffset; x++)
             for (int y = 0; y < height / initalWayPointsOffset; y++) {
-                createWayPoint(x * initalWayPointsOffset, y * initalWayPointsOffset, false);
+                int newX = (int) (x * initalWayPointsOffset + INITAL_WAY_POINTS_OFFSET * Math.random() - INITAL_WAY_POINTS_OFFSET / 2);
+                int newY = (int) (y * initalWayPointsOffset + INITAL_WAY_POINTS_OFFSET * Math.random() - INITAL_WAY_POINTS_OFFSET / 2);
+                createWayPoint(newX, newY, false);
             }
     }
 
@@ -108,6 +112,9 @@ public class MyGame {
     }
 
     public void createWayPoint(int x, int y, boolean safe) {
+        if (!inMap(new Point(x, y))) {
+            return;
+        }
         WayPoint wayPoint = new WayPoint(x, y, this);
         if (safe) {
             newWayPoint = wayPoint;
@@ -202,6 +209,14 @@ public class MyGame {
         return maxPheromonLevelFromNest;
     }
 
+    public boolean isStopedUpdate() {
+        return stopedUpdate;
+    }
+
+    public void setStopedUpdate(boolean stopedUpdate) {
+        this.stopedUpdate = stopedUpdate;
+    }
+
     private class GameLoopThread extends Thread {
         @Override
         public void run() {
@@ -218,6 +233,9 @@ public class MyGame {
     }
 
     private void update() {
+        if (isStopedUpdate()) {
+            return;
+        }
         if (newAnt != null) {
             ants.add(newAnt);
             newAnt = null;

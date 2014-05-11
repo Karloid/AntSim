@@ -13,6 +13,9 @@ public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
 
     @Override
     public boolean keyDown(int i) {
+        if (i == Input.Keys.SPACE) {
+            game.setStopedUpdate(!game.isStopedUpdate());
+        }
         return false;
     }
 
