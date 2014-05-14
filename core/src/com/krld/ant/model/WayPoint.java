@@ -28,7 +28,7 @@ public class WayPoint {
         arriveCount++;
     }
 
-    public boolean empty() {
+    public boolean isEmpty() {
         return arriveCount> MAX_ARRIVE_COUNT;
 
     }

@@ -1,7 +1,8 @@
 package com.krld.ant;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.krld.ant.model.AntAStarMoveBehaviour;
+import com.krld.ant.model.AntMagicMoveBehaviour;
 import com.krld.ant.model.MyGame;
 
 /**
@@ -10,6 +11,7 @@ import com.krld.ant.model.MyGame;
 public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
     private MyGame game;
     private GameView gameView;
+    private int mapValue;
 
     @Override
     public boolean keyDown(int i) {
@@ -26,11 +28,27 @@ public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
 
     @Override
     public boolean keyTyped(char c) {
+        if (c == '1') {
+            System.out.println("Switch ant move behaviour to Ant move magic algorithm");
+            game.switchAntsMoveBehaviour(MyGame.MAGIC_ANT_MOVE_BEHAVIOUR);
+        } else if (c == '2') {
+            System.out.println("Switch ant move behaviour to AStar");
+            game.switchAntsMoveBehaviour(MyGame.ASTAR_ANT_MOVE_BEHAVIOUR);
+        }
         return false;
     }
 
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
+        if (game.isStopedUpdate()) {
+            if (button == Input.Buttons.LEFT) {
+                mapValue = MyGame.NO_PASS_MAP;
+            } else {
+                mapValue = MyGame.PASS_MAP;
+            }
+            game.createObstacle(x, GameManager.HEIGHT - y, mapValue);
+            return false;
+        }
         if (button == Input.Buttons.LEFT) {
             boolean safe = true;
             game.createAnt(x, GameManager.HEIGHT - y, safe);
@@ -48,7 +66,11 @@ public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
     }
 
     @Override
-    public boolean touchDragged(int i, int i2, int i3) {
+    public boolean touchDragged(int x, int y, int i3) {
+        if (game.isStopedUpdate()) {
+            game.createObstacle(x, GameManager.HEIGHT - y, mapValue);
+            return false;
+        }
         return false;
     }
 

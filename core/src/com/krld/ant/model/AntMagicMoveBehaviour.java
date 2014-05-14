@@ -8,15 +8,17 @@ import java.util.Map;
 /**
  * Created by Andrey on 5/8/2014.
  */
-public class AntMoveBehaviour implements MoveBehaviour {
+public class AntMagicMoveBehaviour implements MoveBehaviour {
     private static final double MOVE_COST = 1;
     private static final boolean BREAK_TIES = true;
     private static final int MAX_WAY_SIZE = 1000;
+    public static final float RANDOM_WAYPOINT_RATIO = 0.2f;
+    private static final double EAT_OBSTACLE_RATIO = 0.995f;
     private Ant ant;
     private MyGame context;
     private List<Point> way;
 
-    public AntMoveBehaviour() {
+    public AntMagicMoveBehaviour() {
         way = new ArrayList<Point>();
     }
 
@@ -38,28 +40,28 @@ public class AntMoveBehaviour implements MoveBehaviour {
     private void checkDestination() {
         if (ant.getDestination() == AntDestination.TO_NEST) {
             if (ant.getNest().getPosition().equals(ant.getPosition())) {
-                wayPointEarned();
+                goalEarned(null, ant.getNest());
                 ant.getNest().antArrive(ant);
             }
-        } else if (ant.getDestination() == AntDestination.FROM_NEST)
-
-        {
+        } else if (ant.getDestination() == AntDestination.FROM_NEST) {
             for (WayPoint wayPoint : context.getWayPoints()) {
-                if (wayPoint.getPosition().equals(ant.getPosition())) {
-                    wayPointEarned();
+                if (wayPoint.getPosition().equals(ant.getPosition()) && !wayPoint.isEmpty()) {
+                    goalEarned(wayPoint, ant.getNest());
                     wayPoint.antArrive(ant);
                 }
             }
         }
     }
 
-    private void wayPointEarned() {
+    private void goalEarned(WayPoint wayPoint, Nest nest) {
         double[][] pheromonMap;
         if (ant.getDestination() == AntDestination.FROM_NEST) {
+            ant.setPickedWayPoint(wayPoint);
             context.calcMaxLevelMap(ant.getDestination());
             ant.setDestination(AntDestination.TO_NEST);
             pheromonMap = context.getPheromonMapFromNest();
         } else {
+            ant.setPickedWayPoint(null);
             ant.setDestination(AntDestination.FROM_NEST);
             pheromonMap = context.getPheromonMapToNest();
         }
@@ -173,17 +175,30 @@ public class AntMoveBehaviour implements MoveBehaviour {
     private void addDirectionIfCan(double[][] pheromonMap, HashMap<Direction, DirectionValues> directions, Direction direction) {
         Point point = ant.getPosition().getCopy();
         context.movePointOnDirection(direction, point);
-        if (!way.contains(point)) {
-            try {
-                double pheromonValue = pheromonMap[point.getX()][point.getY()];
-                double heuristik = calcHeuristik(point);
-                // heuristik = heuristik / (heuristik / pheromonValue) * 10;
-                // heuristik = Math.sqrt(heuristik);
-                heuristik = Math.sqrt(heuristik);
-                // heuristik = (heuristik) / 5;
-                directions.put(direction, new DirectionValues(pheromonValue, heuristik, point));
-            } catch (Exception e) {
-                e.printStackTrace();
+        if (context.canMoveToPoint(point)) {
+            if (!way.contains(point)) {
+                try {
+                    double pheromonValue = pheromonMap[point.getX()][point.getY()];
+                    double heuristik = calcHeuristik(point);
+                    heuristik = Math.sqrt(heuristik);
+                    directions.put(direction, new DirectionValues(pheromonValue, heuristik, point));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            eatObstacle(point);
+        }
+    }
+
+    private void eatObstacle(Point point) {
+        if (!context.noObstacle(point)) {
+            if (Math.random() > EAT_OBSTACLE_RATIO) {
+                try {
+                    context.getObstacleMap()[point.getX()][point.getY()] = MyGame.PASS_MAP;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    //do nothing
+                }
             }
         }
     }
@@ -192,14 +207,16 @@ public class AntMoveBehaviour implements MoveBehaviour {
         Double minDistantce = null;
         if (ant.getDestination().equals(AntDestination.FROM_NEST)) {
             for (WayPoint wayPoint : context.getWayPoints()) {
-                if (minDistantce == null || getManhattanDistance(point, wayPoint.getPosition()) < minDistantce) {
-                    minDistantce =/* getManhattanDistance(ant.getNest().getPosition(), ant.getPosition()) +*/ getManhattanDistance(point, wayPoint.getPosition());
+                if ((minDistantce == null || getManhattanDistance(ant.getNest().getPosition(), ant.getPosition())
+                        + getManhattanDistance(point, wayPoint.getPosition()) < minDistantce) && Math.random() > RANDOM_WAYPOINT_RATIO) {
+                    minDistantce = getManhattanDistance(ant.getNest().getPosition(), ant.getPosition()) + getManhattanDistance(point, wayPoint.getPosition());
                 }
             }
         } else if (ant.getDestination().equals(AntDestination.TO_NEST)) {
             for (Nest nest : context.getNests()) {
-                if (minDistantce == null || getManhattanDistance(point, nest.getPosition()) < minDistantce) {
-                    minDistantce = getManhattanDistance(point, nest.getPosition());
+                if (minDistantce == null || getManhattanDistance(ant.getPickedWayPoint().getPosition(), ant.getPosition())
+                        + getManhattanDistance(point, nest.getPosition()) < minDistantce) {
+                    minDistantce = getManhattanDistance(ant.getPickedWayPoint().getPosition(), ant.getPosition()) + getManhattanDistance(point, nest.getPosition());
                 }
             }
         }
@@ -219,7 +236,15 @@ public class AntMoveBehaviour implements MoveBehaviour {
             double dy2 = ant.getNest().getPosition().getY() - position1.getY();
             double cross = Math.abs(dx1 * dy2 - dx2 * dy1);
             return MOVE_COST * (dx + dy) + cross * 0.01d;
-        } else {
+        } else if (BREAK_TIES && ant.getDestination() == AntDestination.TO_NEST) {
+            double dx1 = position.getX() - position1.getX();
+            double dy1 = position.getY() - position1.getY();
+            double dx2 = ant.getPickedWayPoint().getPosition().getX() - position1.getX();
+            double dy2 = ant.getPickedWayPoint().getPosition().getY() - position1.getY();
+            double cross = Math.abs(dx1 * dy2 - dx2 * dy1);
+            return MOVE_COST * (dx + dy) + cross * 0.01d;
+        }
+        {
 
             return MOVE_COST * (dx + dy);
         }
@@ -312,9 +337,9 @@ public class AntMoveBehaviour implements MoveBehaviour {
 
         public Double getFuncValue() {
             if (ant.getDestination() == AntDestination.FROM_NEST) {
-                return pheromonLevel + heuristik;
+                return pheromonLevel * 0 + heuristik;
             } else {
-                return heuristik;
+                return pheromonLevel * 0 + heuristik;
 
             }
         }

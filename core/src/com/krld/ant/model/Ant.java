@@ -4,7 +4,7 @@ package com.krld.ant.model;
  * Created by Andrey on 5/8/2014.
  */
 public class Ant {
-    private final MoveBehaviour moveBehaviour;
+    private MoveBehaviour moveBehaviour;
     private final MyGame context;
     private final Nest nest;
     private Direction direction;
@@ -12,16 +12,16 @@ public class Ant {
     private float rotation;
     private Action action;
     private AntDestination distination;
+    private WayPoint pickedWayPoint;
 
     public Ant(int x, int y, MyGame context, Nest nest) {
         position = new Point(x, y);
         this.context = context;
         this.nest = nest;
-        moveBehaviour = new AntMoveBehaviour();
-        moveBehaviour.setAnt(this);
-        moveBehaviour.setContext(context);
+        setAntMagicMoveBehaviour();
         setDestination(AntDestination.FROM_NEST);
     }
+
 
     public void update() {
         moveBehaviour.update();
@@ -73,5 +73,33 @@ public class Ant {
 
     public Nest getNest() {
         return nest;
+    }
+
+    public WayPoint getPickedWayPoint() {
+        return pickedWayPoint;
+    }
+
+    public void setPickedWayPoint(WayPoint pickedWayPoint) {
+        this.pickedWayPoint = pickedWayPoint;
+    }
+
+    public void setMoveBehaviour(AntMagicMoveBehaviour moveBehaviour) {
+        this.moveBehaviour = moveBehaviour;
+    }
+
+    public MyGame getContext() {
+        return context;
+    }
+
+    public void setAStarMoveBehaviour() {
+        moveBehaviour = new AntAStarMoveBehaviour();
+        moveBehaviour.setAnt(this);
+        moveBehaviour.setContext(context);
+    }
+
+    public void setAntMagicMoveBehaviour() {
+        moveBehaviour = new AntMagicMoveBehaviour();
+        moveBehaviour.setAnt(this);
+        moveBehaviour.setContext(context);
     }
 }

@@ -16,8 +16,14 @@ public class MyGame {
     private static final long UPDATE_DELAY = 10;
     public static final int INITIAL_ANTS_COUNT = 1300;
     public static final float INITIAL_PHEROMON = 1f;
-    private static final double DECREASE_PHEROMON_VOLUME = 0.1f;
+    private static final double DECREASE_PHEROMON_VOLUME = 0.01f;
     private static final int INITAL_WAY_POINTS_OFFSET = 30;
+    public static final int NO_PASS_MAP = 1;
+    public static final int PASS_MAP = 0;
+    public static final int OBSTACLE_BRUSH_SIZE = 4;
+    private static final double MAX_LEVEL_PHEROMON = 100;
+    public static final int MAGIC_ANT_MOVE_BEHAVIOUR = 0;
+    public static final int ASTAR_ANT_MOVE_BEHAVIOUR = 1;
     private final WorldRenderer worldRenderer;
     private final Vector<Nest> nests;
     private MyInputProcessor inputProcessor;
@@ -48,6 +54,7 @@ public class MyGame {
         ants = new Vector<Ant>();
         nests = new Vector<Nest>();
         wayPoints = new Vector<WayPoint>();
+
 
         createAnts(INITIAL_ANTS_COUNT);
         createWayPoints(INITAL_WAY_POINTS_OFFSET);
@@ -190,6 +197,9 @@ public class MyGame {
         double max = 0;
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++) {
+                if (pheromonMap[x][y] > MAX_LEVEL_PHEROMON) {
+                    pheromonMap[x][y] = MAX_LEVEL_PHEROMON;
+                }
                 if (pheromonMap[x][y] > max) {
                     max = pheromonMap[x][y];
                 }
@@ -215,6 +225,35 @@ public class MyGame {
 
     public void setStopedUpdate(boolean stopedUpdate) {
         this.stopedUpdate = stopedUpdate;
+    }
+
+    public void createObstacle(int x, int y, int value) {
+        try {
+            int n = OBSTACLE_BRUSH_SIZE;
+            for (int i = x - n; i < x + n; i++) {
+                for (int j = y - n; j < y + n; j++) {
+                    obstacleMap[i][j] = value;
+                }
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            //do nothing
+        }
+    }
+
+    public int[][] getObstacleMap() {
+        return obstacleMap;
+    }
+
+    public void switchAntsMoveBehaviour(int moveBehaviour) {
+        if (moveBehaviour == MAGIC_ANT_MOVE_BEHAVIOUR) {
+            for (Ant ant : ants) {
+                ant.setAntMagicMoveBehaviour();
+            }
+        } else if (moveBehaviour == ASTAR_ANT_MOVE_BEHAVIOUR){
+            for (Ant ant : ants) {
+                ant.setAStarMoveBehaviour();
+            }
+        }
     }
 
     private class GameLoopThread extends Thread {
@@ -250,7 +289,7 @@ public class MyGame {
 
         List<WayPoint> waypointsToRemove = new ArrayList<WayPoint>();
         for (WayPoint wayPoint : wayPoints) {
-            if (wayPoint.empty()) {
+            if (wayPoint.isEmpty()) {
                 waypointsToRemove.add(wayPoint);
             }
         }
@@ -294,8 +333,19 @@ public class MyGame {
     }
 
     public boolean canMoveToPoint(Point point) {
-        if (inMap(point)) {
+        if (inMap(point) && noObstacle(point)) {
             return true;
+        }
+        return false;
+    }
+
+    public boolean noObstacle(Point point) {
+        try {
+            if (obstacleMap[point.getX()][point.getY()] == PASS_MAP) {
+                return true;
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            //do nothing
         }
         return false;
     }
