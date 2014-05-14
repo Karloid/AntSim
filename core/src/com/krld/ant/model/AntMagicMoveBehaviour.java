@@ -245,7 +245,6 @@ public class AntMagicMoveBehaviour implements MoveBehaviour {
             return MOVE_COST * (dx + dy) + cross * 0.01d;
         }
         {
-
             return MOVE_COST * (dx + dy);
         }
     }
