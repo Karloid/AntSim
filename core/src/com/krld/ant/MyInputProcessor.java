@@ -34,6 +34,10 @@ public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
         } else if (c == '2') {
             System.out.println("Switch ant move behaviour to AStar");
             game.switchAntsMoveBehaviour(MyGame.ASTAR_ANT_MOVE_BEHAVIOUR);
+        } else if (c == '-') {
+            game.getWorldRenderer().setPheromonMapToView(game.getPheromonMapFromNest());
+        } else if (c == '=') {
+            game.getWorldRenderer().setPheromonMapToView(game.getPheromonMapToNest());
         }
         return false;
     }

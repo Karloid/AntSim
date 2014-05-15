@@ -13,7 +13,7 @@ import java.util.Vector;
  * Created by Andrey on 5/8/2014.
  */
 public class MyGame {
-    private static final long UPDATE_DELAY = 10;
+    private static final long UPDATE_DELAY = 0;
     public static final int INITIAL_ANTS_COUNT = 1300;
     public static final float INITIAL_PHEROMON = 1f;
     private static final double DECREASE_PHEROMON_VOLUME = 0.01f;
@@ -24,6 +24,11 @@ public class MyGame {
     private static final double MAX_LEVEL_PHEROMON = 100;
     public static final int MAGIC_ANT_MOVE_BEHAVIOUR = 0;
     public static final int ASTAR_ANT_MOVE_BEHAVIOUR = 1;
+
+    public WorldRenderer getWorldRenderer() {
+        return worldRenderer;
+    }
+
     private final WorldRenderer worldRenderer;
     private final Vector<Nest> nests;
     private MyInputProcessor inputProcessor;
@@ -249,7 +254,7 @@ public class MyGame {
             for (Ant ant : ants) {
                 ant.setAntMagicMoveBehaviour();
             }
-        } else if (moveBehaviour == ASTAR_ANT_MOVE_BEHAVIOUR){
+        } else if (moveBehaviour == ASTAR_ANT_MOVE_BEHAVIOUR) {
             for (Ant ant : ants) {
                 ant.setAStarMoveBehaviour();
             }
@@ -262,7 +267,9 @@ public class MyGame {
             try {
                 while (true) {
                     update();
-                    Thread.sleep(UPDATE_DELAY);
+                    if (UPDATE_DELAY != 0) {
+                        Thread.sleep(UPDATE_DELAY);
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

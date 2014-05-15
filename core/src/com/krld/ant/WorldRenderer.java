@@ -31,6 +31,7 @@ public class WorldRenderer {
     private Texture pheromonTexture;
     private Pixmap obstaclePixMap;
     private Texture obstacleTexture;
+    private double[][] pheromonMapToView;
 
     public void setGame(MyGame game) {
         this.game = game;
@@ -120,7 +121,7 @@ public class WorldRenderer {
         if (Math.random() > UPDATE_PHEROMON_MAP_RATIO) {
 
 
-            double[][] pheromonMap = game.getPheromonMapFromNest();
+            double[][] pheromonMap = getPheromonMapToView();
             for (int x = 0; x < game.getWidth(); x++) {
                 for (int y = 0; y < game.getHeight(); y++) {
                     if (game.getObstacleMap()[x][y] == MyGame.NO_PASS_MAP) {
@@ -192,7 +193,7 @@ public class WorldRenderer {
                 Gdx.files.internal("rotorBoyShadow.png"), false);
         font.setColor(Color.WHITE);
         font.scale(0.1f);
-
+        setPheromonMapToView(game.getPheromonMapFromNest());
         initPheromonPixMap();
         initObstaclePixMap();
     }
@@ -213,5 +214,13 @@ public class WorldRenderer {
 
     private TextureRegion loadTextureRegion(String fileName, int width, int height) {
         return new TextureRegion(new Texture(Gdx.files.internal(fileName)), 0, 0, width, height);
+    }
+
+    public void setPheromonMapToView(double[][] pheromonMapToView) {
+        this.pheromonMapToView = pheromonMapToView;
+    }
+
+    public double[][] getPheromonMapToView() {
+        return pheromonMapToView;
     }
 }
