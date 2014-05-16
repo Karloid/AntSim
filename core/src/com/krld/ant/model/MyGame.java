@@ -274,6 +274,14 @@ public class MyGame {
         return null;
     }
 
+    public WayPoint getWayPointByPosition(Point position) {
+        for (WayPoint wayPoint : getWayPoints()) {
+            if (wayPoint.getPosition().equals(position))
+                return wayPoint;
+        }
+        return null;
+    }
+
     private class GameLoopThread extends Thread {
         @Override
         public void run() {

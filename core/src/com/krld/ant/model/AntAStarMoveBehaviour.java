@@ -11,6 +11,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     private static final double RANDOM_WAY_RATIO = 0f;
     private static final double MOVE_COST = 1;
     private static final boolean BREAK_TIES = true;
+    private static final int MAX_LENGTH_PATH = 999;
     private Ant ant;
     private MyGame context;
     private List<Node> openNodes;
@@ -28,12 +29,16 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     public void update() {
         //    System.out.println("AStar update");
         //    if (true) return;
-        if (goalPosition == null || ant.getPosition().equals(goalPosition)) {
+        if (goalPosition == null || ant.getPosition().equals(goalPosition) || ant.getPosition().equals(path.get(path.size() - 1))) {
             if (ant.getPosition().equals(goalPosition)) {
                 if (ant.getDestination() == AntDestination.TO_NEST) {
                     ant.setDestination(AntDestination.FROM_NEST);
+                    ant.getNest().antArrive(ant);
                 } else {
                     ant.setDestination(AntDestination.TO_NEST);
+                    WayPoint wayPoint = context.getWayPointByPosition(ant.getPosition());
+                    if (wayPoint != null)
+                        wayPoint.antArrive(ant);
                 }
             }
             goalPosition = pickGoalPosition();
@@ -68,7 +73,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
         startNode = new Node(ant.getPosition(), START_NODE);
         calcF(startNode);
         openNodes.add(startNode);
-        while (!openNodes.get(0).getPosition().equals(goalPosition)) {
+        while (!openNodes.get(0).getPosition().equals(goalPosition) && !(openNodes.get(0).getParentsCount() > MAX_LENGTH_PATH)) {
             Node current = openNodes.get(0);
             openNodes.remove(current);
             closedNodes.add(current);
@@ -165,6 +170,8 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
             public int compare(Node o1, Node o2) {
                 if (o1.getF() < o2.getF()) {
                     return -1;
+                } else if (o1.getF() == o2.getF()) {
+                    return 0;
                 } else {
                     return 1;
                 }
@@ -196,9 +203,9 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
             double dx1 = position.getX() - position1.getX();
             double dy1 = position.getY() - position1.getY();
             double dx2 = startNode.getPosition().getX() - position1.getX();
-            double dy2 = startNode.getPosition().getX() - position1.getY();
+            double dy2 = startNode.getPosition().getY() - position1.getY();
             double cross = Math.abs(dx1 * dy2 - dx2 * dy1);
-            return MOVE_COST * (dx + dy) + cross * 0.01d;
+            return MOVE_COST * (dx + dy) + cross * 0.001d;
         } else {
             return MOVE_COST * (dx + dy);
         }
@@ -306,6 +313,18 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
                 return this + " > " + getParent().printParents();
             } else {
                 return this.toString();
+            }
+        }
+
+        public int getParentsCount() {
+            int count = 0;
+            Node node = this;
+            while (true) {
+                node = node.getParent();
+                if (node == null) {
+                    return count;
+                }
+                count++;
             }
         }
     }
