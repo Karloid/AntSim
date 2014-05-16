@@ -17,6 +17,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     private ArrayDeque<Node> closedNodes;
     private Point goalPosition;
     private Node startNode;
+    private ArrayList<Point> path;
 
     @Override
     public void setAnt(Ant ant) {
@@ -27,11 +28,41 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     public void update() {
         //    System.out.println("AStar update");
         //    if (true) return;
-        aStarCalc();
+        if (goalPosition == null || ant.getPosition().equals(goalPosition)) {
+            if (ant.getPosition().equals(goalPosition)) {
+                if (ant.getDestination() == AntDestination.TO_NEST) {
+                    ant.setDestination(AntDestination.FROM_NEST);
+                } else {
+                    ant.setDestination(AntDestination.TO_NEST);
+                }
+            }
+            goalPosition = pickGoalPosition();
+            aStarCalc();
+            runOnPath();
+        } else {
+            runOnPath();
+        }
+    }
+
+    private void runOnPath() {
+        int indexCurrentPos = 0;
+        for (int i = 0; i < path.size(); i++) {
+            if (path.get(i).equals(ant.getPosition())) {
+                indexCurrentPos = i;
+                break;
+            }
+        }
+        if (indexCurrentPos + 1 >= path.size()) {
+            return;
+        }
+        Point nextPoint = path.get(indexCurrentPos + 1);
+        Direction direction = context.getDirectionByPoints(ant.getPosition(), nextPoint);
+        ant.setDirection(direction);
+        ant.setAction(Action.MOVE);
     }
 
     private void aStarCalc() {
-        goalPosition = pickGoalPosition();
+
         closedNodes = new ArrayDeque<Node>();
         openNodes = new ArrayList<Node>();
         startNode = new Node(ant.getPosition(), START_NODE);
@@ -42,16 +73,81 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
             openNodes.remove(current);
             closedNodes.add(current);
             for (Node neighbor : getNeighbors(current)) {
-
+                double costG = current.getG() + MOVE_COST;
+                if (openNodes.contains(neighbor) && costG < neighbor.getG()) {
+                    openNodes.remove(neighbor);
+                }
+                if (closedNodes.contains(neighbor) && costG < neighbor.getG()) {
+                    closedNodes.remove(neighbor);
+                }
+                if (!openNodes.contains(neighbor) && !closedNodes.contains(neighbor)) {
+                    neighbor.setG(costG);
+                    neighbor.recalcF();
+                    openNodes.add(neighbor);
+                    sortOpenNodes();
+                    neighbor.setParent(current);
+                }
             }
-            sortOpenNodes();
-            break;
         }
+        //    System.out.println("done AStar");
+        //   System.out.println("" + openNodes.get(0).printParents());
+        calcPath();
+    }
+
+    private void calcPath() {
+        path = new ArrayList<Point>();
+        Node node = openNodes.get(0);
+        while (true) {
+            path.add(node.getPosition());
+            node = node.getParent();
+            if (node == null) {
+                break;
+            }
+        }
+        Collections.reverse(path);
     }
 
     private List<Node> getNeighbors(Node node) {
         List<Node> neighbors = new ArrayList<Node>();
+        Direction direction = Direction.NORTH;
+        addPointIfCan(direction, node, neighbors);
+        direction = Direction.WEST;
+        addPointIfCan(direction, node, neighbors);
+        direction = Direction.EAST;
+        addPointIfCan(direction, node, neighbors);
+        direction = Direction.SOUTH;
+        addPointIfCan(direction, node, neighbors);
         return neighbors;
+    }
+
+    private void addPointIfCan(Direction direction, Node node, List<Node> neighbors) {
+        Point point = node.getPosition().getCopy();
+        context.movePointOnDirection(direction, point);
+        if (context.canMoveToPoint(point)) {
+
+            Node nodeToAdd = findNodeByPosition(point);
+            if (nodeToAdd == null) {
+                nodeToAdd = new Node(point, COMMON_NODE);
+                nodeToAdd.setParent(node);
+                calcF(nodeToAdd);
+            }
+            neighbors.add(nodeToAdd);
+
+        }
+    }
+
+    private Node findNodeByPosition(Point point) {
+        for (Node node : openNodes) {
+            if (node.getPosition().equals(point)) {
+                return node;
+            }
+        }
+        for (Node node : closedNodes) {
+            if (node.getPosition().equals(point)) {
+                return node;
+            }
+        }
+        return null;
     }
 
     private void calcF(Node node) {
@@ -67,7 +163,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
         Collections.sort(openNodes, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
-                if (o1.getF() > o2.getF()) {
+                if (o1.getF() < o2.getF()) {
                     return -1;
                 } else {
                     return 1;
@@ -77,15 +173,20 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     }
 
     private Point pickGoalPosition() {
-        Double minDistantce = null;
-        WayPoint pickedWayPoint = null;
-        for (WayPoint wayPoint : context.getWayPoints()) {
-            if ((minDistantce == null || getManhattanDistance(ant.getPosition(), wayPoint.getPosition()) < minDistantce) && Math.random() > RANDOM_WAY_RATIO) {
-                minDistantce = getManhattanDistance(ant.getPosition(), wayPoint.getPosition());
-                pickedWayPoint = wayPoint;
+        if (ant.getDestination() == AntDestination.FROM_NEST) {
+            Double minDistantce = null;
+            WayPoint pickedWayPoint = null;
+            for (WayPoint wayPoint : context.getWayPoints()) {
+                if ((minDistantce == null || getManhattanDistance(ant.getPosition(), wayPoint.getPosition()) < minDistantce) && Math.random() > RANDOM_WAY_RATIO) {
+                    minDistantce = getManhattanDistance(ant.getPosition(), wayPoint.getPosition());
+                    pickedWayPoint = wayPoint;
+                }
             }
+            return pickedWayPoint.getPosition().getCopy();
+        } else if (ant.getDestination() == AntDestination.TO_NEST) {
+            return ant.getNest().getPosition();
         }
-        return pickedWayPoint.getPosition().getCopy();
+        return new Point(10, 10);
     }
 
     private double getManhattanDistance(Point position, Point position1) {
@@ -112,12 +213,41 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
         return goalPosition;
     }
 
-    private class Node {
+    public List<Node> getOpenNodes() {
+        return openNodes;
+    }
+
+    public ArrayDeque<Node> getClosedNodes() {
+        return closedNodes;
+    }
+
+    public ArrayList<Point> getPath() {
+        return path;
+    }
+
+    public class Node {
         private final int nodeType;
         private double f;
         private double g;
         private double h;
         private Node parent;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Node node = (Node) o;
+
+            if (!position.equals(node.position)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return position.hashCode();
+        }
 
         public Point getPosition() {
             return position;
@@ -160,6 +290,23 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
 
         public void setParent(Node parent) {
             this.parent = parent;
+        }
+
+        @Override
+        public String toString() {
+            return "f: " + getF() + "; g: " + getG() + "; h: " + getH() + "; pos: " + getPosition();
+        }
+
+        public void recalcF() {
+            setF(getG() + getH());
+        }
+
+        public String printParents() {
+            if (getParent() != null) {
+                return this + " > " + getParent().printParents();
+            } else {
+                return this.toString();
+            }
         }
     }
 }

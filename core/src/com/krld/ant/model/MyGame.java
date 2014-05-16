@@ -13,11 +13,11 @@ import java.util.Vector;
  * Created by Andrey on 5/8/2014.
  */
 public class MyGame {
-    private static final long UPDATE_DELAY = 0;
-    public static final int INITIAL_ANTS_COUNT = 1300;
+    private static final long UPDATE_DELAY = 10;
+    public static final int INITIAL_ANTS_COUNT = 1;
     public static final float INITIAL_PHEROMON = 1f;
     private static final double DECREASE_PHEROMON_VOLUME = 0.01f;
-    private static final int INITAL_WAY_POINTS_OFFSET = 30;
+    private static final int INITAL_WAY_POINTS_OFFSET = 300;
     public static final int NO_PASS_MAP = 1;
     public static final int PASS_MAP = 0;
     public static final int OBSTACLE_BRUSH_SIZE = 4;
@@ -259,6 +259,19 @@ public class MyGame {
                 ant.setAStarMoveBehaviour();
             }
         }
+    }
+
+    public Direction getDirectionByPoints(Point curPos, Point nextPos) {
+        if (nextPos.getX() + 1 == curPos.getX()) {
+            return Direction.WEST;
+        } else if (nextPos.getX() - 1 == curPos.getX()) {
+            return Direction.EAST;
+        } else if (nextPos.getY() + 1 == curPos.getY()) {
+            return Direction.SOUTH;
+        } else if (nextPos.getY() - 1 == curPos.getY()) {
+            return Direction.NORTH;
+        }
+        return null;
     }
 
     private class GameLoopThread extends Thread {

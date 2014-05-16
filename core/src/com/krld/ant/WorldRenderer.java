@@ -27,10 +27,8 @@ public class WorldRenderer {
     private HashMap<String, TextureRegion> textures;
     private ShapeRenderer renderer;
     private BitmapFont font;
-    private Pixmap pheromonPixMap;
-    private Texture pheromonTexture;
-    private Pixmap obstaclePixMap;
-    private Texture obstacleTexture;
+    private Pixmap pixMap;
+    private Texture pixMapTexture;
     private double[][] pheromonMapToView;
 
     public void setGame(MyGame game) {
@@ -43,7 +41,8 @@ public class WorldRenderer {
 
     public void draw(SpriteBatch batch) {
         // drawPheromon(batch);
-        drawPheromonOverTexture(batch);
+        // drawPheromonOverTexture(batch);
+        drawAStarTexture(batch);
         //  drawObstacleOverTexture(batch);
         try {
 
@@ -65,27 +64,44 @@ public class WorldRenderer {
         }
     }
 
-    private void drawObstacleOverTexture(SpriteBatch batch) {
+    private void drawAStarTexture(SpriteBatch batch) {
         if (Math.random() > UPDATE_PHEROMON_MAP_RATIO) {
-
-
-            int[][] obstacleMap = game.getObstacleMap();
-            for (int x = 0; x < game.getWidth(); x++) {
-                for (int y = 0; y < game.getHeight(); y++) {
-                    if (obstacleMap[x][y] == MyGame.NO_PASS_MAP) {
-                        obstaclePixMap.setColor(Color.MAGENTA);
-                    } else if (obstacleMap[x][y] == MyGame.PASS_MAP) {
-                        obstaclePixMap.setColor(new Color(1f, 1f, 1f, 0f));
+            Ant ant = game.getAnts().get(0);
+            if (ant.getMoveBehaviour() instanceof AntAStarMoveBehaviour) {
+                pixMap.setColor(Color.WHITE);
+                pixMap.fillRectangle(0, 0, game.getWidth(), game.getHeight());
+                for (int x = 0; x < game.getWidth(); x++) {
+                    for (int y = 0; y < game.getHeight(); y++) {
+                        if (game.getObstacleMap()[x][y] == MyGame.NO_PASS_MAP) {
+                            pixMap.setColor(Color.MAGENTA);
+                            pixMap.drawPixel(x, game.getHeight() - y);
+                        }
                     }
-                    obstaclePixMap.drawPixel(x, game.getHeight() - y);
-                    //  renderer.setColor(newColor);
-                    //  renderer.rect(x, y, 1, 1);
-
                 }
+                AntAStarMoveBehaviour moveBehaviour = (AntAStarMoveBehaviour) (ant.getMoveBehaviour());
+                pixMap.setColor(Color.CYAN);
+                try {
+                    if (moveBehaviour.getOpenNodes() != null)
+                        for (AntAStarMoveBehaviour.Node node : moveBehaviour.getOpenNodes()) {
+                            pixMap.drawPixel(node.getPosition().getX(), game.getHeight() - node.getPosition().getY());
+                        }
+                    pixMap.setColor(Color.GRAY);
+                    if (moveBehaviour.getClosedNodes() != null)
+                        for (AntAStarMoveBehaviour.Node node : moveBehaviour.getClosedNodes()) {
+                            pixMap.drawPixel(node.getPosition().getX(), game.getHeight() - node.getPosition().getY());
+                        }
+                    pixMap.setColor(Color.GREEN);
+                    if (moveBehaviour.getPath() != null)
+                        for (Point pos : moveBehaviour.getPath()) {
+                            pixMap.drawPixel(pos.getX(), game.getHeight() - pos.getY());
+                        }
+                } catch (Exception e) {
+                    //do nothing
+                }
+                pixMapTexture = new Texture(pixMap, Pixmap.Format.RGB888, false);
             }
-            obstacleTexture = new Texture(obstaclePixMap, Pixmap.Format.RGB888, false);
         }
-        batch.draw(obstacleTexture, 1f / 2f, game.getWidth() / game.getHeight() / 2f);
+        batch.draw(pixMapTexture, 1f / 2f, game.getWidth() / game.getHeight() / 2f);
     }
 
     private void drawAnts(SpriteBatch batch) {
@@ -119,13 +135,11 @@ public class WorldRenderer {
 
     private void drawPheromonOverTexture(SpriteBatch batch) {
         if (Math.random() > UPDATE_PHEROMON_MAP_RATIO) {
-
-
             double[][] pheromonMap = getPheromonMapToView();
             for (int x = 0; x < game.getWidth(); x++) {
                 for (int y = 0; y < game.getHeight(); y++) {
                     if (game.getObstacleMap()[x][y] == MyGame.NO_PASS_MAP) {
-                        pheromonPixMap.setColor(Color.MAGENTA);
+                        pixMap.setColor(Color.MAGENTA);
                     } else {
                         float level = (float) (pheromonMap[x][y] / game.getMaxPheromonLevelFromNest());
                         if (pheromonMap[x][y] == game.INITIAL_PHEROMON) {
@@ -138,17 +152,17 @@ public class WorldRenderer {
                             level = MIN_LEVEL;
                         }
                         Color newColor = new Color(1f - level, 1f - level, 1f - level, 1f);
-                        pheromonPixMap.setColor(newColor);
+                        pixMap.setColor(newColor);
                     }
-                    pheromonPixMap.drawPixel(x, game.getHeight() - y);
+                    pixMap.drawPixel(x, game.getHeight() - y);
                     //  renderer.setColor(newColor);
                     //  renderer.rect(x, y, 1, 1);
 
                 }
             }
-            pheromonTexture = new Texture(pheromonPixMap, Pixmap.Format.RGB888, false);
+            pixMapTexture = new Texture(pixMap, Pixmap.Format.RGB888, false);
         }
-        batch.draw(pheromonTexture, 1f / 2f, game.getWidth() / game.getHeight() / 2f);
+        batch.draw(pixMapTexture, 1f / 2f, game.getWidth() / game.getHeight() / 2f);
     }
 
     private void drawPheromon(SpriteBatch batch) {
@@ -168,14 +182,14 @@ public class WorldRenderer {
                     level = MIN_LEVEL;
                 }
                 Color newColor = new Color(1f - level, 1f - level, 1f - level, 1f);
-                pheromonPixMap.setColor(newColor);
-                pheromonPixMap.drawPixel(x, y);
+                pixMap.setColor(newColor);
+                pixMap.drawPixel(x, y);
                 //  renderer.setColor(newColor);
                 //  renderer.rect(x, y, 1, 1);
 
             }
         }
-        pheromonTexture = new Texture(pheromonPixMap, Pixmap.Format.RGB888, false);
+        pixMapTexture = new Texture(pixMap, Pixmap.Format.RGB888, false);
         // renderer.end();
         //batch.begin();
     }
@@ -195,21 +209,14 @@ public class WorldRenderer {
         font.scale(0.1f);
         setPheromonMapToView(game.getPheromonMapFromNest());
         initPheromonPixMap();
-        initObstaclePixMap();
     }
 
-    private void initObstaclePixMap() {
-        obstaclePixMap = new Pixmap(game.getWidth(), game.getHeight(), Pixmap.Format.RGBA8888);
-        obstaclePixMap.setColor(Color.WHITE);
-        obstaclePixMap.fillRectangle(0, 0, game.getWidth(), game.getHeight());
-        obstacleTexture = new Texture(pheromonPixMap, Pixmap.Format.RGB888, false);
-    }
 
     private void initPheromonPixMap() {
-        pheromonPixMap = new Pixmap(game.getWidth(), game.getHeight(), Pixmap.Format.RGBA8888);
-        pheromonPixMap.setColor(Color.WHITE);
-        pheromonPixMap.fillRectangle(0, 0, game.getWidth(), game.getHeight());
-        pheromonTexture = new Texture(pheromonPixMap, Pixmap.Format.RGB888, false);
+        pixMap = new Pixmap(game.getWidth(), game.getHeight(), Pixmap.Format.RGBA8888);
+        pixMap.setColor(Color.WHITE);
+        pixMap.fillRectangle(0, 0, game.getWidth(), game.getHeight());
+        pixMapTexture = new Texture(pixMap, Pixmap.Format.RGB888, false);
     }
 
     private TextureRegion loadTextureRegion(String fileName, int width, int height) {
