@@ -1,5 +1,7 @@
 package com.krld.ant.model;
 
+import com.sun.javafx.collections.transformation.SortedList;
+
 import java.util.*;
 
 /**
@@ -11,10 +13,10 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     private static final double RANDOM_WAY_RATIO = 0f;
     private static final double MOVE_COST = 1;
     private static final boolean BREAK_TIES = true;
-    private static final int MAX_LENGTH_PATH = 999;
+    private static final int MAX_LENGTH_PATH = 33;
     private Ant ant;
     private MyGame context;
-    private List<Node> openNodes;
+    private PriorityQueue<Node> openNodes;
     private ArrayDeque<Node> closedNodes;
     private Point goalPosition;
     private Node startNode;
@@ -69,12 +71,23 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     private void aStarCalc() {
 
         closedNodes = new ArrayDeque<Node>();
-        openNodes = new ArrayList<Node>();
+        openNodes = new PriorityQueue<Node>(300, new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                if (o1.getF() < o2.getF()) {
+                    return -1;
+                } else if (o1.getF() == o2.getF()) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        });
         startNode = new Node(ant.getPosition(), START_NODE);
         calcF(startNode);
         openNodes.add(startNode);
-        while (!openNodes.get(0).getPosition().equals(goalPosition) && !(openNodes.get(0).getParentsCount() > MAX_LENGTH_PATH)) {
-            Node current = openNodes.get(0);
+        while (!openNodes.peek().getPosition().equals(goalPosition) && !(openNodes.peek().getParentsCount() > MAX_LENGTH_PATH)) {
+            Node current = openNodes.peek();
             openNodes.remove(current);
             closedNodes.add(current);
             for (Node neighbor : getNeighbors(current)) {
@@ -89,7 +102,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
                     neighbor.setG(costG);
                     neighbor.recalcF();
                     openNodes.add(neighbor);
-                    sortOpenNodes();
+            //        sortOpenNodes();
                     neighbor.setParent(current);
                 }
             }
@@ -101,7 +114,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
 
     private void calcPath() {
         path = new ArrayList<Point>();
-        Node node = openNodes.get(0);
+        Node node = openNodes.peek();
         while (true) {
             path.add(node.getPosition());
             node = node.getParent();
@@ -165,7 +178,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     }
 
     private void sortOpenNodes() {
-        Collections.sort(openNodes, new Comparator<Node>() {
+      /*  Collections.sort(openNodes, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
                 if (o1.getF() < o2.getF()) {
@@ -176,7 +189,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
                     return 1;
                 }
             }
-        });
+        });*/
     }
 
     private Point pickGoalPosition() {
@@ -220,7 +233,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
         return goalPosition;
     }
 
-    public List<Node> getOpenNodes() {
+    public PriorityQueue<Node> getOpenNodes() {
         return openNodes;
     }
 
@@ -328,4 +341,5 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
             }
         }
     }
+
 }
