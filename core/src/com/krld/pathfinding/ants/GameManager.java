@@ -1,6 +1,6 @@
-package com.krld.ant;
+package com.krld.pathfinding.ants;
 
-import com.krld.ant.model.MyGame;
+import com.krld.pathfinding.ants.model.MyGame;
 
 /**
  * Created by Andrey on 5/8/2014.

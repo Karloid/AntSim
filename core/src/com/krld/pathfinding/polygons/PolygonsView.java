@@ -1,4 +1,4 @@
-package com.krld.ant;
+package com.krld.pathfinding.polygons;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -7,12 +7,15 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.krld.ant.model.MyGame;
+import com.krld.pathfinding.ants.model.MyGame;
 
-public class GameView extends ApplicationAdapter {
+/**
+ * Created by Andrey on 5/17/2014.
+ */
+public class PolygonsView extends ApplicationAdapter {
     SpriteBatch batch;
     private BitmapFont font;
-    private MyGame game;
+    private PolygonsWorld polygonsWorld;
     private InputProcessor inputProcessor;
 
     @Override
@@ -23,7 +26,7 @@ public class GameView extends ApplicationAdapter {
         font.setColor(Color.WHITE);
         font.scale(1f);
         initInputProcessor();
-        game.runGameLoop();
+        polygonsWorld.runGameLoop();
     }
 
     @Override
@@ -31,18 +34,18 @@ public class GameView extends ApplicationAdapter {
         Gdx.gl.glClearColor(0.8f, 0.8f, 0.9f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        game.draw(batch);
-        font.draw(batch, "fps: " + Gdx.graphics.getFramesPerSecond(), 10, game.getHeight() - 10);
+        polygonsWorld.draw(batch);
+        font.draw(batch, "fps: " + Gdx.graphics.getFramesPerSecond(), 10, polygonsWorld.getHeight() - 10);
         batch.end();
     }
 
 
-    public void setGame(MyGame game) {
-        this.game = game;
+    public void setPolygonsWorld(PolygonsWorld polygonsWorld) {
+        this.polygonsWorld = polygonsWorld;
     }
 
-    public MyGame getGame() {
-        return game;
+    public PolygonsWorld getPolygonsWorld() {
+        return polygonsWorld;
     }
 
     public void setInputProcessor(InputProcessor inputProcessor) {
@@ -54,8 +57,8 @@ public class GameView extends ApplicationAdapter {
     }
 
     public void initInputProcessor() {
-        setInputProcessor(game.getInputProcessor());
-        game.getInputProcessor().setGameView(this);
-        Gdx.input.setInputProcessor(inputProcessor);
+        setInputProcessor(polygonsWorld.getInputProcessor());
+//        polygonsWorld.getInputProcessor().setPolygonView(this);
+    //    Gdx.input.setInputProcessor(inputProcessor);
     }
 }

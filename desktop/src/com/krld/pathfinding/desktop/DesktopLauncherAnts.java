@@ -1,11 +1,11 @@
-package com.krld.ant.desktop;
+package com.krld.pathfinding.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.krld.ant.GameManager;
-import com.krld.ant.GameView;
+import com.krld.pathfinding.ants.GameManager;
+import com.krld.pathfinding.ants.GameView;
 
-public class DesktopLauncher {
+public class DesktopLauncherAnts {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.width = GameManager.WIDTH;

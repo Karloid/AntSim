@@ -1,6 +1,4 @@
-package com.krld.ant.model;
-
-import com.sun.javafx.collections.transformation.SortedList;
+package com.krld.pathfinding.ants.model;
 
 import java.util.*;
 
@@ -13,7 +11,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
     private static final double RANDOM_WAY_RATIO = 0f;
     private static final double MOVE_COST = 1;
     private static final boolean BREAK_TIES = true;
-    private static final int MAX_LENGTH_PATH = 33;
+    private static final int MAX_LENGTH_PATH = 999;
     private Ant ant;
     private MyGame context;
     private PriorityQueue<Node> openNodes;

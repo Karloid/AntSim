@@ -1,9 +1,8 @@
-package com.krld.ant;
+package com.krld.pathfinding.ants;
 
 import com.badlogic.gdx.Input;
-import com.krld.ant.model.AntAStarMoveBehaviour;
-import com.krld.ant.model.AntMagicMoveBehaviour;
-import com.krld.ant.model.MyGame;
+import com.krld.pathfinding.ants.model.MyGame;
+import com.krld.pathfinding.polygons.PolygonsView;
 
 /**
  * Created by Andrey on 5/8/2014.
@@ -12,6 +11,7 @@ public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
     private MyGame game;
     private GameView gameView;
     private int mapValue;
+    private PolygonsView polygonView;
 
     @Override
     public boolean keyDown(int i) {
@@ -102,5 +102,13 @@ public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
 
     public GameView getGameView() {
         return gameView;
+    }
+
+    public void setPolygonView(PolygonsView polygonView) {
+        this.polygonView = polygonView;
+    }
+
+    public PolygonsView getPolygonView() {
+        return polygonView;
     }
 }

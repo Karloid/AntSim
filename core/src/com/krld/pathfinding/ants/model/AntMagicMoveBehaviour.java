@@ -1,4 +1,4 @@
-package com.krld.ant.model;
+package com.krld.pathfinding.ants.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,11 +1,11 @@
-package com.krld.ant.android;
+package com.krld.pathfinding.android;
 
 import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.krld.ant.GameManager;
-import com.krld.ant.GameView;
+import com.krld.pathfinding.ants.GameManager;
+import com.krld.pathfinding.ants.GameView;
 
 public class AndroidLauncher extends AndroidApplication {
 	@Override

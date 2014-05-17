@@ -1,4 +1,4 @@
-package com.krld.ant;
+package com.krld.pathfinding.ants;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.krld.ant.model.*;
+import com.krld.pathfinding.ants.model.*;
 
 import java.util.HashMap;
 

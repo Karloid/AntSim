@@ -1,9 +1,9 @@
-package com.krld.ant.model;
+package com.krld.pathfinding.ants.model;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.krld.ant.GameManager;
-import com.krld.ant.MyInputProcessor;
-import com.krld.ant.WorldRenderer;
+import com.krld.pathfinding.ants.GameManager;
+import com.krld.pathfinding.ants.MyInputProcessor;
+import com.krld.pathfinding.ants.WorldRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
