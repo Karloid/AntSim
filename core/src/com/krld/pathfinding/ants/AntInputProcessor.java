@@ -7,7 +7,7 @@ import com.krld.pathfinding.polygons.PolygonsView;
 /**
  * Created by Andrey on 5/8/2014.
  */
-public class MyInputProcessor implements com.badlogic.gdx.InputProcessor {
+public class AntInputProcessor implements com.badlogic.gdx.InputProcessor {
     private MyGame game;
     private GameView gameView;
     private int mapValue;

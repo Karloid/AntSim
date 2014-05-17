@@ -1,8 +1,8 @@
 package com.krld.pathfinding.ants.model;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.krld.pathfinding.ants.AntInputProcessor;
 import com.krld.pathfinding.ants.GameManager;
-import com.krld.pathfinding.ants.MyInputProcessor;
 import com.krld.pathfinding.ants.WorldRenderer;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class MyGame {
 
     private final WorldRenderer worldRenderer;
     private final Vector<Nest> nests;
-    private MyInputProcessor inputProcessor;
+    private AntInputProcessor inputProcessor;
     private GameLoopThread gameLoopThread;
     private static List<Ant> ants;
     private Ant newAnt;
@@ -50,7 +50,7 @@ public class MyGame {
     public MyGame(int width, int height) {
         this.width = width;
         this.height = height;
-        inputProcessor = new MyInputProcessor();
+        inputProcessor = new AntInputProcessor();
         inputProcessor.setGame(this);
 
         worldRenderer = new WorldRenderer();
@@ -86,11 +86,11 @@ public class MyGame {
         }
     }
 
-    public MyInputProcessor getInputProcessor() {
+    public AntInputProcessor getInputProcessor() {
         return inputProcessor;
     }
 
-    public void setInputProcessor(MyInputProcessor inputProcessor) {
+    public void setInputProcessor(AntInputProcessor inputProcessor) {
         this.inputProcessor = inputProcessor;
     }
 
