@@ -21,9 +21,11 @@ public class PolygonInputProcessor implements InputProcessor {
         if (c == Input.Keys.NUM_1) {
             state = InputState.ADD_POINTS_TO_OBSTACLES;
             context.cleanLinks();
+            context.cleanPathCalcer();
         } else if (c == Input.Keys.NUM_2) {
             state = InputState.ADD_START_OR_END_POINTS;
             context.cleanLinks();
+            context.cleanPathCalcer();
         } else if (c == Input.Keys.NUM_3) {
             state = InputState.CALC_VIEW_GRAPH;
             context.calcViewGraph();

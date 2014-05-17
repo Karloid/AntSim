@@ -15,7 +15,11 @@ import java.util.List;
  */
 public class PolygonWorldRenderer {
     private static final float START_END_POINT_RADIUS = 3;
-    public static final Color LINK_COLOR = Color.MAGENTA;
+    public static final Color LINK_COLOR = new Color(0.5f, 0.5f, 0.5f, 0.3f);
+    private static final Color PATH_COLOR = Color.ORANGE;
+    private static final float OPEN_NODE_RADIUS = 5;
+    private static final Color OPEN_NODE_COLOR = Color.RED;
+    private static final Color CLOSE_NODE_COLOR = Color.BLUE;
     private ShapeRenderer shapeRenderer;
     private BitmapFont font;
     private PolygonsWorld context;
@@ -45,6 +49,59 @@ public class PolygonWorldRenderer {
         drawObstacles(batch);
         drawStartEndPoints(batch);
         drawViewGraph(batch);
+        drawPathGraph(batch);
+    }
+
+    private void drawPathGraph(SpriteBatch batch) {
+        AStarPathCalcer pathCalcer = null;
+        if (context.getPathCalcer() instanceof AStarPathCalcer) {
+            pathCalcer = (AStarPathCalcer) context.getPathCalcer();
+        } else {
+            return;
+        }
+        drawNodesSets(batch, pathCalcer);
+        batch.end();
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(PATH_COLOR);
+        Point nextPoint = null;
+        for (Point currentPoint : pathCalcer.getPath()) {
+            if (nextPoint != null) {
+                shapeRenderer.line(currentPoint.getX(), currentPoint.getY(), nextPoint.getX(), nextPoint.getY());
+            }
+            nextPoint = currentPoint;
+        }
+        shapeRenderer.end();
+        batch.begin();
+
+    }
+
+    private void drawNodesSets(SpriteBatch batch, AStarPathCalcer pathCalcer) {
+        batch.end();
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(OPEN_NODE_COLOR);
+        if (pathCalcer.getOpenNodes() != null)
+            for (AStarPathCalcer.Node currentNode : pathCalcer.getOpenNodes()) {
+                Point currentPoint = currentNode.getPosition();
+                shapeRenderer.circle(currentPoint.getX(), currentPoint.getY(), OPEN_NODE_RADIUS);
+            }
+        shapeRenderer.setColor(CLOSE_NODE_COLOR);
+        if (pathCalcer.getClosedNodes() != null)
+            for (AStarPathCalcer.Node currentNode : pathCalcer.getClosedNodes()) {
+                Point currentPoint = currentNode.getPosition();
+                shapeRenderer.circle(currentPoint.getX(), currentPoint.getY(), OPEN_NODE_RADIUS);
+            }
+        shapeRenderer.end();
+        batch.begin();
+        if (pathCalcer.getClosedNodes() != null)
+            for (AStarPathCalcer.Node currentNode : pathCalcer.getClosedNodes()) {
+                Point currentPoint = currentNode.getPosition();
+                font.draw(batch, Math.round(currentNode.getF() * 100) / 100 + "", currentPoint.getX(), currentPoint.getY());
+            }
+        if (pathCalcer.getOpenNodes() != null)
+            for (AStarPathCalcer.Node currentNode : pathCalcer.getOpenNodes()) {
+                Point currentPoint = currentNode.getPosition();
+                font.draw(batch, Math.round(currentNode.getF() * 100) / 100 + "", currentPoint.getX(), currentPoint.getY());
+            }
     }
 
     private void drawViewGraph(SpriteBatch batch) {

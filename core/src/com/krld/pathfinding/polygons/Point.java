@@ -172,4 +172,8 @@ public class Point {
     public Obstacle getObstacle() {
         return obstacle;
     }
+
+    public HashSet<Link> getLinks() {
+        return links;
+    }
 }

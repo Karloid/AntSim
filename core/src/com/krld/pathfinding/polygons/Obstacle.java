@@ -3,6 +3,7 @@ package com.krld.pathfinding.polygons;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.sun.scenario.effect.Offset;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ public class Obstacle {
     private static final float RADIUS_POINT = 5;
     public static final Color NOT_CURRENT_COLOR = Color.GRAY;
     public static final Color CURRENT_OBSTACLE_COLOR = Color.GREEN;
+    private static final int OFFSET = 0;
     private final List<Point> points;
     private PolygonsWorld context;
 
@@ -40,13 +42,13 @@ public class Obstacle {
             shapeRenderer.circle(point.getX(), point.getY(), RADIUS_POINT);
 
             if (prevPoint != null) {
-                shapeRenderer.line(point.getX(), point.getY(), prevPoint.getX(), prevPoint.getY());
+                shapeRenderer.line(point.getX() - OFFSET, point.getY() - OFFSET, prevPoint.getX() + OFFSET, prevPoint.getY() + OFFSET);
             }
             prevPoint = point;
         }
         if (points.size() > 2) {
-            shapeRenderer.line(points.get(0).getX(), points.get(0).getY(),
-                    points.get(points.size() - 1).getX(), points.get(points.size() - 1).getY());
+            shapeRenderer.line(points.get(0).getX()  - OFFSET, points.get(0).getY() - OFFSET,
+                    points.get(points.size() - 1).getX() + OFFSET, points.get(points.size() - 1).getY() + OFFSET);
         }
         shapeRenderer.end();
         batch.begin();

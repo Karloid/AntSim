@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class PolygonsWorld {
     private final PolygonWorldRenderer worldRenderer;
+    private PathCalcer pathCalcer;
     private PolygonInputProcessor inputProcessor;
     private int height;
     private int width;
@@ -31,6 +32,8 @@ public class PolygonsWorld {
 
         obstacles = new ArrayList<Obstacle>();
         allLinks = new HashSet<Link>();
+        pathCalcer = new AStarPathCalcer();
+        pathCalcer.setContext(this);
     }
 
     public void runGameLoop() {
@@ -171,7 +174,12 @@ public class PolygonsWorld {
                 point.calcLinks();
             }
         }
-        System.out.println("done calc view graph");
+        System.out.println("done calc view graph " + " links in graph: " + getAllLinks().size());
+        calcPath();
+    }
+
+    private void calcPath() {
+         pathCalcer.calcPath();
     }
 
     public void setAllLinks(HashSet<Link> allLinks) {
@@ -194,5 +202,14 @@ public class PolygonsWorld {
     public void cleanLinks() {
         setAllLinks(new HashSet<Link>());
 
+    }
+
+    public PathCalcer getPathCalcer() {
+        return pathCalcer;
+    }
+
+    public void cleanPathCalcer() {
+        pathCalcer = new AStarPathCalcer();
+        pathCalcer.setContext(this);
     }
 }
