@@ -2,6 +2,7 @@ package com.krld.pathfinding.polygons;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.krld.pathfinding.polygons.model.PolygonsWorld;
 
 /**
  * Created by Andrey on 5/17/2014.
@@ -33,9 +34,13 @@ public class PolygonInputProcessor implements InputProcessor {
         if (c == Input.Keys.F1) {
             polygonView.setShowHelp(!polygonView.isShowHelp());
         }
+        if (c == Input.Keys.Q) {
+            context.getWorldRenderer().setShowNodeF(!context.getWorldRenderer().isShowNodeF());
+        }
         if (state == InputState.ADD_POINTS_TO_OBSTACLES) {
             addPointsToObstaclesKeyDown(c);
         }
+
         return false;
     }
 

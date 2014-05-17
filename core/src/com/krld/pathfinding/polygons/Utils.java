@@ -1,5 +1,7 @@
 package com.krld.pathfinding.polygons;
 
+import com.krld.pathfinding.polygons.model.Point;
+
 /**
  * Created by Andrey on 5/17/2014.
  */

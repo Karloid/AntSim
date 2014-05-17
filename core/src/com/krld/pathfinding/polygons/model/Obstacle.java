@@ -1,9 +1,8 @@
-package com.krld.pathfinding.polygons;
+package com.krld.pathfinding.polygons.model;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.sun.scenario.effect.Offset;
 
 import java.util.ArrayList;
 import java.util.List;

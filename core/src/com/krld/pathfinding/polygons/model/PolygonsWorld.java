@@ -1,6 +1,10 @@
-package com.krld.pathfinding.polygons;
+package com.krld.pathfinding.polygons.model;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.krld.pathfinding.polygons.AStarPathCalcer;
+import com.krld.pathfinding.polygons.PathCalcer;
+import com.krld.pathfinding.polygons.PolygonInputProcessor;
+import com.krld.pathfinding.polygons.PolygonWorldRenderer;
 
 import java.util.ArrayList;
 import java.util.HashSet;

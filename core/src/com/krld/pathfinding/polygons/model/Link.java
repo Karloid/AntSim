@@ -1,4 +1,6 @@
-package com.krld.pathfinding.polygons;
+package com.krld.pathfinding.polygons.model;
+
+import com.krld.pathfinding.polygons.Utils;
 
 import java.util.HashSet;
 import java.util.Iterator;

@@ -1,5 +1,9 @@
 package com.krld.pathfinding.polygons;
 
+import com.krld.pathfinding.polygons.model.Link;
+import com.krld.pathfinding.polygons.model.Point;
+import com.krld.pathfinding.polygons.model.PolygonsWorld;
+
 import java.util.*;
 
 /**

@@ -5,10 +5,12 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.utils.ObjectSet;
+import com.krld.pathfinding.polygons.model.Link;
+import com.krld.pathfinding.polygons.model.Obstacle;
+import com.krld.pathfinding.polygons.model.Point;
+import com.krld.pathfinding.polygons.model.PolygonsWorld;
 
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by Andrey on 5/17/2014.
@@ -23,6 +25,7 @@ public class PolygonWorldRenderer {
     private ShapeRenderer shapeRenderer;
     private BitmapFont font;
     private PolygonsWorld context;
+    private boolean showNodeF;
 
     public PolygonWorldRenderer(PolygonsWorld context) {
         setContext(context);
@@ -92,6 +95,9 @@ public class PolygonWorldRenderer {
             }
         shapeRenderer.end();
         batch.begin();
+        if (!isShowNodeF()) {
+            return;
+        }
         if (pathCalcer.getClosedNodes() != null)
             for (AStarPathCalcer.Node currentNode : pathCalcer.getClosedNodes()) {
                 Point currentPoint = currentNode.getPosition();
@@ -139,5 +145,13 @@ public class PolygonWorldRenderer {
         for (Obstacle obstacle : context.getObstacles()) {
             obstacle.draw(batch, shapeRenderer);
         }
+    }
+
+    public boolean isShowNodeF() {
+        return showNodeF;
+    }
+
+    public void setShowNodeF(boolean showNodeF) {
+        this.showNodeF = showNodeF;
     }
 }
