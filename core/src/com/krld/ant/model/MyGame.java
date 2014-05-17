@@ -72,7 +72,8 @@ public class MyGame {
             for (int y = 0; y < height / initalWayPointsOffset; y++) {
                 int newX = (int) (x * initalWayPointsOffset + INITAL_WAY_POINTS_OFFSET * Math.random() - INITAL_WAY_POINTS_OFFSET / 2);
                 int newY = (int) (y * initalWayPointsOffset + INITAL_WAY_POINTS_OFFSET * Math.random() - INITAL_WAY_POINTS_OFFSET / 2);
-                createWayPoint(newX, newY, false);
+                if (canMoveToPoint(new Point(newX, newY)))
+                    createWayPoint(newX, newY, false);
             }
     }
 
@@ -369,7 +370,7 @@ public class MyGame {
 
     public boolean noObstacle(Point point) {
         try {
-            if (obstacleMap[point.getX()][point.getY()] == PASS_MAP) {
+            if (obstacleMap == null || obstacleMap[point.getX()][point.getY()] == PASS_MAP) {
                 return true;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
