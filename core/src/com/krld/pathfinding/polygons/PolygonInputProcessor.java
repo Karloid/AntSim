@@ -3,8 +3,6 @@ package com.krld.pathfinding.polygons;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 
-import javax.swing.*;
-
 /**
  * Created by Andrey on 5/17/2014.
  */
@@ -22,8 +20,10 @@ public class PolygonInputProcessor implements InputProcessor {
     public boolean keyDown(int c) {
         if (c == Input.Keys.NUM_1) {
             state = InputState.ADD_POINTS_TO_OBSTACLES;
+            context.cleanLinks();
         } else if (c == Input.Keys.NUM_2) {
             state = InputState.ADD_START_OR_END_POINTS;
+            context.cleanLinks();
         } else if (c == Input.Keys.NUM_3) {
             state = InputState.CALC_VIEW_GRAPH;
             context.calcViewGraph();
@@ -72,6 +72,7 @@ public class PolygonInputProcessor implements InputProcessor {
         } else if (button == Input.Buttons.RIGHT) {
             context.removeLastPointFromCurrentObstacle();
         }
+
     }
 
     private void addStartOrEndPointTouchDown(int x, int y, int button) {
@@ -80,6 +81,7 @@ public class PolygonInputProcessor implements InputProcessor {
         } else if (button == Input.Buttons.RIGHT) {
             context.addNewEndPoint(x, context.getHeight() - y);
         }
+        context.calcViewGraph();
     }
 
     @Override

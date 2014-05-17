@@ -1,6 +1,7 @@
 package com.krld.pathfinding.polygons;
 
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Created by Andrey on 5/17/2014.
@@ -68,30 +69,42 @@ public class Point {
     }
 
     private void addLinkToIfCan(Point pointGoal) {
-        boolean haveIntersect = false;
-        for (Obstacle obstacle : context.getObstacles()) {
-            Point prevPoint = null;
-            for (Point pointObstacle : obstacle.getPoints()) {
-                if (prevPoint == null) {
-                    if (obstacle.getPoints().size() > 2) {
-                        prevPoint = obstacle.getPoints().get(obstacle.getPoints().size() - 1);
+        if (getObstacle() != null && pointGoal.getObstacle() != null && getObstacle() == pointGoal.getObstacle()) {
+            List<Point> points = getObstacle().getPoints();
+            int indexThis = points.indexOf(this);
+            int indexGoal = points.indexOf(pointGoal);
+            int deltaIndex = Math.abs(indexThis - indexGoal);
+            if ((deltaIndex != 1)
+                    && deltaIndex != points.size() - 1) {
+                return;
+            }
+
+        } else {
+
+            boolean haveIntersect = false;
+            for (Obstacle obstacle : context.getObstacles()) {
+                Point prevPoint = null;
+                for (Point pointObstacle : obstacle.getPoints()) {
+                    if (prevPoint == null) {
+                        if (obstacle.getPoints().size() > 2) {
+                            prevPoint = obstacle.getPoints().get(obstacle.getPoints().size() - 1);
+                        }
                     }
+                    if (prevPoint != null && !(this == prevPoint || this == pointObstacle || pointGoal == prevPoint || pointGoal == pointObstacle)
+                            && checkIntersect(this, pointGoal, prevPoint, pointObstacle)) {
+                        haveIntersect = true;
+                        break;
+                    }
+                    prevPoint = pointObstacle;
                 }
-                if (prevPoint != null && !(this == prevPoint || this == pointObstacle || pointGoal == prevPoint || pointGoal == pointObstacle)
-                        && checkIntersect(this, pointGoal, prevPoint, pointObstacle)) {
-                    haveIntersect = true;
+                if (haveIntersect) {
                     break;
                 }
-                prevPoint = pointObstacle;
             }
             if (haveIntersect) {
-                break;
+                return;
             }
         }
-        if (haveIntersect) {
-            return;
-        }
-
         Link link = context.getLink(this, pointGoal);
         if (link == null) {
             link = new Link(this, pointGoal);

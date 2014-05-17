@@ -190,4 +190,9 @@ public class PolygonsWorld {
         }
         return null;
     }
+
+    public void cleanLinks() {
+        setAllLinks(new HashSet<Link>());
+
+    }
 }
