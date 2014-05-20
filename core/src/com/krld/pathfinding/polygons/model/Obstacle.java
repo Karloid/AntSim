@@ -15,6 +15,7 @@ public class Obstacle {
     public static final Color NOT_CURRENT_COLOR = Color.GRAY;
     public static final Color CURRENT_OBSTACLE_COLOR = Color.GREEN;
     private static final int OFFSET = 0;
+    public static final Color COLOR_FILL_POLYGON = Color.PINK;
     private final List<Point> points;
     private PolygonsWorld context;
 
@@ -50,6 +51,57 @@ public class Obstacle {
                     points.get(points.size() - 1).getX() + OFFSET, points.get(points.size() - 1).getY() + OFFSET);
         }
         shapeRenderer.end();
+   /*     shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        float[] polygonPoints = new float[points.size() * 2];
+        int i = 0;
+        for (Point point : points) {
+            polygonPoints[i] = point.getX();
+            i++;
+            polygonPoints[i] = point.getY();
+            i++;
+        }
+        shapeRenderer.setColor(COLOR_FILL_POLYGON);
+        shapeRenderer.polygon(polygonPoints);
+        shapeRenderer.end();*/
+
+        /*Here is a LIBGDX example which draws 2D concave poly.
+
+// define class members for PolygonSprite PolygonSpriteBatch
+
+PolygonSprite poly;
+PolygonSpriteBatch polyBatch;
+Texture textureSolid;
+// create instances, 1x1 size texture used with red pixel as workaround, (x,y) array of coords used for initialization of poly
+
+ctor() {
+    textureSolid = makeTextureBox(1, 0xFFFF0000, 0, 0);
+    float a = 100;
+    float b = 100;
+    PolygonRegion polyReg = new PolygonRegion(new TextureRegion(textureSolid),
+      new float[] {
+        a*0, b*0,
+        a*0, b*2,
+        a*3, b*2,
+        a*3, b*0,
+        a*2, b*0,
+        a*2, b*1,
+        a*1, b*1,
+        a*1, b*0,
+    });
+    poly = new PolygonSprite(polyReg);
+    poly.setOrigin(a, b);
+    polyBatch = new PolygonSpriteBatch();
+}
+// draw and rotate poly
+
+void draw() {
+    super.draw();
+    polyBatch.begin();
+    poly.draw(polyBatch);
+    polyBatch.end();
+    poly.rotate(1.1f);
+}
+        * */
         batch.begin();
     }
 

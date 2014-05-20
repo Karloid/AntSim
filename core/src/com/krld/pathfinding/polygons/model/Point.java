@@ -1,5 +1,7 @@
 package com.krld.pathfinding.polygons.model;
 
+import com.krld.pathfinding.polygons.Utils;
+
 import java.util.HashSet;
 import java.util.List;
 
@@ -7,6 +9,7 @@ import java.util.List;
  * Created by Andrey on 5/17/2014.
  */
 public class Point {
+    private static final double DISTANCE = 3000;
     private final int id;
     private int x;
     private int y;
@@ -69,42 +72,98 @@ public class Point {
     }
 
     private void addLinkToIfCan(Point pointGoal) {
+        Obstacle shareObstacle = null;
         if (getObstacle() != null && pointGoal.getObstacle() != null && getObstacle() == pointGoal.getObstacle()) {
+            shareObstacle = getObstacle();
             List<Point> points = getObstacle().getPoints();
             int indexThis = points.indexOf(this);
             int indexGoal = points.indexOf(pointGoal);
             int deltaIndex = Math.abs(indexThis - indexGoal);
-            if ((deltaIndex != 1)
-                    && deltaIndex != points.size() - 1) {
+            if ((deltaIndex == 1)
+                    || deltaIndex == points.size() - 1) {
+                createLink(pointGoal);
                 return;
             }
 
-        } else {
+        }
 
-            boolean haveIntersect = false;
-            for (Obstacle obstacle : context.getObstacles()) {
-                Point prevPoint = null;
-                for (Point pointObstacle : obstacle.getPoints()) {
-                    if (prevPoint == null) {
-                        if (obstacle.getPoints().size() > 2) {
-                            prevPoint = obstacle.getPoints().get(obstacle.getPoints().size() - 1);
-                        }
+        boolean haveIntersect = false;
+        for (Obstacle obstacle : context.getObstacles()) {
+            Point prevPoint = null;
+            for (Point pointObstacle : obstacle.getPoints()) {
+                if (prevPoint == null) {
+                    if (obstacle.getPoints().size() > 2) {
+                        prevPoint = obstacle.getPoints().get(obstacle.getPoints().size() - 1);
                     }
-                    if (prevPoint != null && !(this == prevPoint || this == pointObstacle || pointGoal == prevPoint || pointGoal == pointObstacle)
-                            && checkIntersect(this, pointGoal, prevPoint, pointObstacle)) {
-                        haveIntersect = true;
-                        break;
-                    }
-                    prevPoint = pointObstacle;
                 }
-                if (haveIntersect) {
+                if (prevPoint != null && !(this == prevPoint || this == pointObstacle || pointGoal == prevPoint || pointGoal == pointObstacle)
+                        && checkIntersect(this, pointGoal, prevPoint, pointObstacle)) {
+                    haveIntersect = true;
                     break;
                 }
+                if (obstacle == shareObstacle) {
+                    //  System.out.println("check point from obstacle");
+                    haveIntersect = checkLineInObstacle(this, pointGoal, obstacle);
+                    if (haveIntersect) {
+                        break;
+                    }
+
+                }
+                prevPoint = pointObstacle;
             }
             if (haveIntersect) {
-                return;
+                break;
             }
         }
+        if (haveIntersect) {
+            return;
+        }
+
+        createLink(pointGoal);
+    }
+
+    private boolean checkLineInObstacle(Point point, Point pointGoal, Obstacle obstacle) {
+        int x = (point.getX() + pointGoal.getX()) / 2;
+        int y = (point.getY() + pointGoal.getY()) / 2;
+        Point pointOnLine = new Point(x, y, getContext());
+        int n = 10;
+        int count = 0;
+        for (int i = 0; i < n; i++) {
+            double azimuth = Math.random() * 360;
+            count += (checkPointInObstacle(obstacle, pointOnLine, azimuth) ? 1 : 0);
+        }
+        if (count > n / 2) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean checkPointInObstacle(Obstacle obstacle, Point pointOnLine, double azimuth) {
+        Point pointOnLineVector = Utils.getPointByAzimuthDistance(pointOnLine, azimuth, DISTANCE);
+        Point prevPoint = null;
+        int countIntersect = 0;
+        for (Point pointObstacle : obstacle.getPoints()) {
+            if (prevPoint == null) {
+                if (obstacle.getPoints().size() > 2) {
+                    prevPoint = obstacle.getPoints().get(obstacle.getPoints().size() - 1);
+                }
+            }
+            if (prevPoint != null && !(pointOnLine == prevPoint || pointOnLine == pointObstacle ||
+                    pointOnLineVector == prevPoint || pointOnLineVector == pointObstacle)
+                    && checkIntersect(pointOnLine, pointOnLineVector, prevPoint, pointObstacle)) {
+                countIntersect++;
+            }
+            prevPoint = pointObstacle;
+        }
+        if (countIntersect % 2 == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private void createLink(Point pointGoal) {
         Link link = context.getLink(this, pointGoal);
         if (link == null) {
             link = new Link(this, pointGoal);

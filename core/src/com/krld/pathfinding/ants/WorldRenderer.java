@@ -41,7 +41,7 @@ public class WorldRenderer {
 
     public void draw(SpriteBatch batch) {
         // drawPheromon(batch);
-        // drawPheromonOverTexture(batch);
+       //  drawPheromonOverTexture(batch);
         drawAStarTexture(batch);
         //  drawObstacleOverTexture(batch);
         try {
