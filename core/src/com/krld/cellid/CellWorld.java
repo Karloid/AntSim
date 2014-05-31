@@ -3,6 +3,8 @@ package com.krld.cellid;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Andrey on 5/30/2014.
@@ -12,30 +14,66 @@ public class CellWorld {
     public static final int MAX_LONGITUDE = 180;
     //  public static final int MULTIPLAYER = 12;
 
-    private final int[][] cells;
+    private int[][] cells;
     private Worker worker;
     private boolean downloading;
-    public static int multiplayer = 12;
+    public static int multiplayer = 1;
     private int arrayWidth;
     private int arrayHeight;
-    private long XOffset;
-    private int YOffset;
+    private double XOffset;
+    private double YOffset;
+    private List<Station> stations;
 
     public CellWorld() {
-        setArrayWidth(1000);
-        setArrayHeight(700);
+        setArrayWidth(1800);
+        setArrayHeight(900);
         setXOffset(0);
         setYOffset(0);
+        downloadStationFromFile();
+        initCells();
+
+    }
+
+    private void downloadStationFromFile() {
+        downloading = true;
+        BufferedReader br = null;
+        double x = 0;
+        double y = 0;
+        String[] strs = null;
+        String line = null;
+        stations = new ArrayList<Station>();
+        try {
+            br = new BufferedReader(new FileReader("cell_towers.csv"));
+            System.out.println(br.readLine());
+
+            while (true) {
+                line = br.readLine();
+                if (line == null) {
+                    break;
+                }
+                strs = line.split(",");
+                String cellId = strs[0];
+                x = Double.valueOf(strs[4]);
+                y = Double.valueOf(strs[5]);
+                Station station = new Station(x, y, cellId);
+                stations.add(station);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        downloading = false;
+        System.out.println("downloading from file to ram end");
+    }
+
+    public void initCells() {
         cells = new int[getArrayWidth()][getArrayHeight()];
-
-    }
-
-    private int getCurrentLongitude() {
-        return MAX_LONGITUDE * multiplayer;
-    }
-
-    private int getCurrentLatitude() {
-        return MAX_LATITUDE * multiplayer;
     }
 
     public void runDownloadCells() {
@@ -76,19 +114,19 @@ public class CellWorld {
         this.arrayHeight = arrayHeight;
     }
 
-    public long getXOffset() {
+    public double getXOffset() {
         return XOffset;
     }
 
-    public void setXOffset(long XOffset) {
+    public void setXOffset(double XOffset) {
         this.XOffset = XOffset;
     }
 
-    public void setYOffset(int YOffset) {
+    public void setYOffset(double YOffset) {
         this.YOffset = YOffset;
     }
 
-    public int getYOffset() {
+    public double getYOffset() {
         return YOffset;
     }
 
@@ -104,40 +142,24 @@ public class CellWorld {
 
         private void downloadCells() {
             downloading = true;
-            BufferedReader br = null;
             long x = 0;
             long y = 0;
-            String[] strs = null;
-            String line = null;
-            try {
-                br = new BufferedReader(new FileReader("cell_towers.csv"));
-                br.readLine();
+            for (Station station : stations) {
 
-                while (true) {
-                    line = br.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    strs = line.split(",");
-                    x = Math.round(Double.valueOf(strs[4]) * getMultiplayer()) + 180 * getMultiplayer();
-                    y = Math.round(Double.valueOf(strs[5]) * getMultiplayer()) + 90 * getMultiplayer();
-                    if (x < getXOffset() || y < getYOffset() || x > 359 * getMultiplayer() || y > 179 * getMultiplayer()) {
-                        continue;
-                    }
-                    cells[((int) x)][(MAX_LONGITUDE * getMultiplayer() - (int) y)]++;
-                }
+                x = Math.round(station.getX() * getMultiplayer() - getXOffset() * getMultiplayer()) + 180 * getMultiplayer();
+                y = Math.round(station.getY() * getMultiplayer() - getYOffset() * getMultiplayer()) + 90 * getMultiplayer();
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
                 try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    cells[((int) (((int) x) - getXOffset()))][((int) ((getArrayHeight() - (int) y) - getYOffset()))]++;
+                } catch (Exception e) {
+                    //   e.printStackTrace();
+                }
+                if (Thread.interrupted()) {
+                    break;
                 }
             }
             downloading = false;
-            System.out.println("downloading end");
+            System.out.println("downloading from ram to array end");
         }
     }
 }

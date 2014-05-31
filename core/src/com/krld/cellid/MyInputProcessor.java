@@ -23,13 +23,29 @@ public class MyInputProcessor implements InputProcessor {
         if (i == Input.Keys.DOWN) {
             view.moveCamera(Directions.DOWN);
         }
+
+        if (i == Input.Keys.ENTER) {
+            view.setUpdatingCellPixMap(!view.isUpdatingCellPixMap());
+        }
+
+        if (i == Input.Keys.MINUS) {
+            view.deltaMoveDegree = view.deltaMoveDegree * 0.5f;
+        }
+        if (i == Input.Keys.PLUS || i == Input.Keys.EQUALS) {
+            view.deltaMoveDegree = view.deltaMoveDegree + 0.5f;
+        }
+
         if (i == Input.Keys.SPACE) {
-            CellWorld.multiplayer = Math.round(CellWorld.multiplayer * 1.5f);
-            view.initGeneral();
+            CellWorld.multiplayer = Math.round(CellWorld.multiplayer * 1.3f) + (Math.random() > 0.5f ? 1 : 0);
+            view.getCellWorld().initCells();
+            view.getCellWorld().stopDownload();
+            view.getCellWorld().runDownloadCells();
         }
         if (i == Input.Keys.ALT_RIGHT) {
-            CellWorld.multiplayer = Math.round(CellWorld.multiplayer / 1.5f);
-            view.initGeneral();
+            CellWorld.multiplayer = Math.round(CellWorld.multiplayer * 0.7f);
+            view.getCellWorld().initCells();
+            view.getCellWorld().stopDownload();
+            view.getCellWorld().runDownloadCells();
         }
 
 

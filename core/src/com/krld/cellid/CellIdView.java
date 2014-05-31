@@ -20,6 +20,8 @@ public class CellIdView extends ApplicationAdapter {
     private CellWorld cellWorld;
     private float xTexture;
     private float yTexture;
+    public float deltaMoveDegree = 3;
+    private boolean updatingCellPixMap;
 
     @Override
     public void create() {
@@ -30,6 +32,7 @@ public class CellIdView extends ApplicationAdapter {
         font.scale(0.01f);
         initInputProcessor();
         initGeneral();
+        setUpdatingCellPixMap(true);
     }
 
     public void initGeneral() {
@@ -41,6 +44,8 @@ public class CellIdView extends ApplicationAdapter {
         initCellPixMap();
         xTexture = 0 - cellPixMap.getWidth() / 2;
         yTexture = 0 - cellPixMap.getHeight() / 2;
+        xTexture = 0;
+        yTexture = 0;
     }
 
     private void initInputProcessor() {
@@ -51,9 +56,9 @@ public class CellIdView extends ApplicationAdapter {
     }
 
     private void initCellPixMap() {
-        cellPixMap = new Pixmap(CellWorld.MAX_LATITUDE * cellWorld.getMultiplayer(), CellWorld.MAX_LONGITUDE * cellWorld.getMultiplayer(), Pixmap.Format.RGBA8888);
+        cellPixMap = new Pixmap(cellWorld.getArrayWidth(), cellWorld.getArrayHeight(), Pixmap.Format.RGBA8888);
         cellPixMap.setColor(Color.WHITE);
-        cellPixMap.fillRectangle(0, 0, CellWorld.MAX_LATITUDE * cellWorld.getMultiplayer(), CellWorld.MAX_LONGITUDE * cellWorld.getMultiplayer());
+        cellPixMap.fillRectangle(0, 0, cellWorld.getArrayWidth(), cellWorld.getArrayHeight());
         cellPixMapTexture = new Texture(cellPixMap, Pixmap.Format.RGB888, false);
     }
 
@@ -63,12 +68,15 @@ public class CellIdView extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         drawWorld();
-        font.draw(batch, "fps: " + Gdx.graphics.getFramesPerSecond(), 10, CellWorld.MAX_LONGITUDE * cellWorld.getMultiplayer() - 300);
+        font.draw(batch, "fps: " + Gdx.graphics.getFramesPerSecond(), 10, 1000 - 100);
+        font.draw(batch, "xOffset: " + cellWorld.getXOffset() + "; yOffset: " + cellWorld.getYOffset(), 10, 1000 - 200);
+        font.draw(batch, "multiply: " + cellWorld.getMultiplayer() + " deltaZoom: " + deltaMoveDegree
+                + " updarting pixMap: " + isUpdatingCellPixMap(), 10, 1000 - 300);
         batch.end();
     }
 
     private void drawWorld() {
-        if (cellWorld.isDownloadingCells()) {
+        if (isUpdatingCellPixMap()) {
             updateCellPixMap();
         }
 
@@ -78,8 +86,8 @@ public class CellIdView extends ApplicationAdapter {
     }
 
     private void updateCellPixMap() {
-        for (int x = 0; x < CellWorld.MAX_LATITUDE * cellWorld.getMultiplayer(); x++)
-            for (int y = 0; y < CellWorld.MAX_LONGITUDE * cellWorld.getMultiplayer(); y++) {
+        for (int x = 0; x < cellWorld.getArrayWidth(); x++)
+            for (int y = 0; y < cellWorld.getArrayHeight(); y++) {
                 float value = cellWorld.getCells()[x][y];
                 if (value > 255) value = 255;
                 if (value < 100 && value != 0) value = 100;
@@ -93,7 +101,7 @@ public class CellIdView extends ApplicationAdapter {
     }
 
     public void moveCamera(Directions direction) {
-        if (direction == Directions.UP) {
+  /*      if (direction == Directions.UP) {
             yTexture -= 100;
         }
         if (direction == Directions.DOWN) {
@@ -104,10 +112,34 @@ public class CellIdView extends ApplicationAdapter {
         }
         if (direction == Directions.LEFT) {
             xTexture += 100;
+        }*/
+        if (direction == Directions.UP) {
+
+            cellWorld.setYOffset(cellWorld.getYOffset() + deltaMoveDegree);
         }
+        if (direction == Directions.DOWN) {
+            cellWorld.setYOffset(cellWorld.getYOffset() - deltaMoveDegree);
+        }
+        if (direction == Directions.RIGHT) {
+            cellWorld.setXOffset(cellWorld.getXOffset() + deltaMoveDegree);
+        }
+        if (direction == Directions.LEFT) {
+            cellWorld.setXOffset(cellWorld.getXOffset() - deltaMoveDegree);
+        }
+        getCellWorld().initCells();
+        getCellWorld().stopDownload();
+        getCellWorld().runDownloadCells();
     }
 
     public CellWorld getCellWorld() {
         return cellWorld;
+    }
+
+    public boolean isUpdatingCellPixMap() {
+        return updatingCellPixMap;
+    }
+
+    public void setUpdatingCellPixMap(boolean updatingCellPixMap) {
+        this.updatingCellPixMap = updatingCellPixMap;
     }
 }
