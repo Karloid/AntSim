@@ -16,9 +16,17 @@ public class CellWorld {
     private Worker worker;
     private boolean downloading;
     public static int multiplayer = 12;
+    private int arrayWidth;
+    private int arrayHeight;
+    private long XOffset;
+    private int YOffset;
 
     public CellWorld() {
-        cells = new int[getCurrentLatitude()][getCurrentLongitude()];
+        setArrayWidth(1000);
+        setArrayHeight(700);
+        setXOffset(0);
+        setYOffset(0);
+        cells = new int[getArrayWidth()][getArrayHeight()];
 
     }
 
@@ -52,12 +60,44 @@ public class CellWorld {
         worker.interrupt();
     }
 
+    public int getArrayWidth() {
+        return arrayWidth;
+    }
+
+    public void setArrayWidth(int arrayWidth) {
+        this.arrayWidth = arrayWidth;
+    }
+
+    public int getArrayHeight() {
+        return arrayHeight;
+    }
+
+    public void setArrayHeight(int arrayHeight) {
+        this.arrayHeight = arrayHeight;
+    }
+
+    public long getXOffset() {
+        return XOffset;
+    }
+
+    public void setXOffset(long XOffset) {
+        this.XOffset = XOffset;
+    }
+
+    public void setYOffset(int YOffset) {
+        this.YOffset = YOffset;
+    }
+
+    public int getYOffset() {
+        return YOffset;
+    }
+
     private class Worker extends Thread {
         @Override
         public void run() {
             try {
                 downloadCells();
-            }catch ( Exception e) {
+            } catch (Exception e) {
                 System.out.println("stop download");
             }
         }
@@ -81,7 +121,7 @@ public class CellWorld {
                     strs = line.split(",");
                     x = Math.round(Double.valueOf(strs[4]) * getMultiplayer()) + 180 * getMultiplayer();
                     y = Math.round(Double.valueOf(strs[5]) * getMultiplayer()) + 90 * getMultiplayer();
-                    if (x < 0 || y < 0 || x > 359 * getMultiplayer() || y > 179 * getMultiplayer()) {
+                    if (x < getXOffset() || y < getYOffset() || x > 359 * getMultiplayer() || y > 179 * getMultiplayer()) {
                         continue;
                     }
                     cells[((int) x)][(MAX_LONGITUDE * getMultiplayer() - (int) y)]++;
