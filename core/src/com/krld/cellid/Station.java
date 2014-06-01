@@ -7,7 +7,25 @@ public class Station {
     private final double x;
     private final double y;
 
-    public String getCellId() {
+    private final int cellId;
+    private final int mobileCountryCode;
+    private final int mobileNetworkCode;
+
+    public int getLocalAreaCode() {
+        return localAreaCode;
+    }
+
+    public int getMobileNetworkCode() {
+        return mobileNetworkCode;
+    }
+
+    public int getMobileCountryCode() {
+        return mobileCountryCode;
+    }
+
+    private final int localAreaCode;
+
+    public int getCellId() {
         return cellId;
     }
 
@@ -19,11 +37,12 @@ public class Station {
         return y;
     }
 
-    private final String cellId;
-
-    public Station(double x, double y, String cellId) {
-           this.x = x;
-           this.y = y;
-           this.cellId = cellId;
+    public Station(double x, double y, int cellId, int mobileCountryCode, int mobileNetworkCode, int localAreaCode) {
+        this.x = x;
+        this.y = y;
+        this.cellId = cellId;
+        this.mobileCountryCode = mobileCountryCode;
+        this.mobileNetworkCode = mobileNetworkCode;
+        this.localAreaCode = localAreaCode;
     }
 }
