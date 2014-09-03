@@ -168,11 +168,11 @@ void draw() {
     poly.rotate(1.1f);
 }
         * */
-        if (poly != null && polyBatch != null) {
+      /*  if (poly != null && polyBatch != null) {
             polyBatch.begin();
             poly.draw(polyBatch);
             polyBatch.end();
-        }
+        }*/
         batch.begin();
     }
 

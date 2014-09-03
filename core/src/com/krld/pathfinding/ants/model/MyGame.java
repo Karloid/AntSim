@@ -14,7 +14,7 @@ import java.util.Vector;
  */
 public class MyGame {
     private static final long UPDATE_DELAY = 10;
-    public static final int INITIAL_ANTS_COUNT = 1;
+    public static final int INITIAL_ANTS_COUNT = 10000;
     public static final float INITIAL_PHEROMON = 1f;
     private static final double DECREASE_PHEROMON_VOLUME = 0.01f;
     private static final int INITAL_WAY_POINTS_OFFSET = 300;
@@ -262,15 +262,15 @@ public class MyGame {
         }
     }
 
-    public Direction getDirectionByPoints(Point curPos, Point nextPos) {
+    public Directions getDirectionByPoints(Point curPos, Point nextPos) {
         if (nextPos.getX() + 1 == curPos.getX()) {
-            return Direction.WEST;
+            return Directions.LEFT;
         } else if (nextPos.getX() - 1 == curPos.getX()) {
-            return Direction.EAST;
+            return Directions.RIGHT;
         } else if (nextPos.getY() + 1 == curPos.getY()) {
-            return Direction.SOUTH;
+            return Directions.DOWN;
         } else if (nextPos.getY() - 1 == curPos.getY()) {
-            return Direction.NORTH;
+            return Directions.UP;
         }
         return null;
     }
@@ -340,7 +340,7 @@ public class MyGame {
         if (ant.getAction() != Action.MOVE) {
             return;
         }
-        Direction direction = ant.getDirection();
+        Directions direction = ant.getDirection();
         Point newPoint = ant.getPosition().getCopy();
         movePointOnDirection(direction, newPoint);
 
@@ -349,14 +349,14 @@ public class MyGame {
         }
     }
 
-    public void movePointOnDirection(Direction direction, Point newPoint) {
-        if (direction == Direction.WEST) {
+    public void movePointOnDirection(Directions direction, Point newPoint) {
+        if (direction == Directions.LEFT) {
             newPoint.setX(newPoint.getX() - 1);
-        } else if (direction == Direction.EAST) {
+        } else if (direction == Directions.RIGHT) {
             newPoint.setX(newPoint.getX() + 1);
-        } else if (direction == Direction.SOUTH) {
+        } else if (direction == Directions.DOWN) {
             newPoint.setY(newPoint.getY() - 1);
-        } else if (direction == Direction.NORTH) {
+        } else if (direction == Directions.UP) {
             newPoint.setY(newPoint.getY() + 1);
         }
     }

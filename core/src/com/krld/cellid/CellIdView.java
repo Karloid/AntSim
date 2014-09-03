@@ -133,10 +133,10 @@ public class CellIdView extends ApplicationAdapter {
                     cellPixMap.setColor(pixColor);
                     cellPixMap.drawPixel(x, y);
                     try {
-                        cellPixMap.drawPixel(x + 1, y + 1);
+                     /*   cellPixMap.drawPixel(x + 1, y + 1);
                         cellPixMap.drawPixel(x - 1, y + 1);
-                        cellPixMap.drawPixel(x - 1, y - 1);
-                        cellPixMap.drawPixel(x + 1, y - 1);
+                        cellPixMap.drawPixel(x - 1, y - 1);*/
+                   /*     cellPixMap.drawPixel(x + 1, y - 1);
                         cellPixMap.drawPixel(x + 1, y + 2);
                         cellPixMap.drawPixel(x + 1, y + 3);
                         cellPixMap.drawPixel(x + 1, y + 4);
@@ -144,7 +144,7 @@ public class CellIdView extends ApplicationAdapter {
                         cellPixMap.drawPixel(x + 2, y + 2);
                         cellPixMap.drawPixel(x + 2, y + 3);
                         cellPixMap.drawPixel(x + 2, y + 4);
-                        cellPixMap.drawPixel(x + 2, y + 5);
+                        cellPixMap.drawPixel(x + 2, y + 5);    */
                     } catch (Exception e) {
 
                     }

@@ -110,14 +110,14 @@ public class AntMagicMoveBehaviour implements MoveBehaviour {
         } else {
             pheromonMap = context.getPheromonMapToNest();
         }
-        HashMap<Direction, DirectionValues> directionsMaps = new HashMap<Direction, DirectionValues>();
-        Direction direction = Direction.NORTH;
+        HashMap<Directions, DirectionValues> directionsMaps = new HashMap<Directions, DirectionValues>();
+        Directions direction = Directions.UP;
         addDirectionIfCan(pheromonMap, directionsMaps, direction);
-        direction = Direction.WEST;
+        direction = Directions.LEFT;
         addDirectionIfCan(pheromonMap, directionsMaps, direction);
-        direction = Direction.EAST;
+        direction = Directions.RIGHT;
         addDirectionIfCan(pheromonMap, directionsMaps, direction);
-        direction = Direction.SOUTH;
+        direction = Directions.DOWN;
         addDirectionIfCan(pheromonMap, directionsMaps, direction);
 
         if (directionsMaps.size() == 0) {
@@ -126,36 +126,36 @@ public class AntMagicMoveBehaviour implements MoveBehaviour {
             return;
         }
         Double minHeuristik = null;
-        Direction minDirection = null;
-        for (Map.Entry<Direction, DirectionValues> entry : directionsMaps.entrySet()) {
+        Directions minDirection = null;
+        for (Map.Entry<Directions, DirectionValues> entry : directionsMaps.entrySet()) {
             if (minHeuristik == null || minHeuristik > entry.getValue().getHeuristik()) {
                 minHeuristik = entry.getValue().getHeuristik();
                 minDirection = entry.getKey();
             }
         }
-        for (Map.Entry<Direction, DirectionValues> entry : directionsMaps.entrySet()) {
+        for (Map.Entry<Directions, DirectionValues> entry : directionsMaps.entrySet()) {
             if (!entry.getKey().equals(minDirection)) {
                 entry.getValue().setHeuristik(0d);
             }
         }
         Double sum = 0d;
-        for (Map.Entry<Direction, DirectionValues> entry : directionsMaps.entrySet()) {
+        for (Map.Entry<Directions, DirectionValues> entry : directionsMaps.entrySet()) {
             sum += entry.getValue().getFuncValue();
             if (minHeuristik == null || minHeuristik < entry.getValue().getHeuristik()) {
                 minHeuristik = entry.getValue().getHeuristik();
                 minDirection = entry.getKey();
             }
         }
-        HashMap<Direction, Probabilty> directionsProbability = new HashMap<Direction, Probabilty>();
+        HashMap<Directions, Probabilty> directionsProbability = new HashMap<Directions, Probabilty>();
         double lastProbability = 0;
-        for (Map.Entry<Direction, DirectionValues> entry : directionsMaps.entrySet()) {
+        for (Map.Entry<Directions, DirectionValues> entry : directionsMaps.entrySet()) {
             Double probability = entry.getValue().getFuncValue() / sum;
             directionsProbability.put(entry.getKey(), new Probabilty(lastProbability, lastProbability + probability));
             lastProbability += probability;
         }
 
         double random = Math.random();
-        for (Map.Entry<Direction, Probabilty> entry : directionsProbability.entrySet()) {
+        for (Map.Entry<Directions, Probabilty> entry : directionsProbability.entrySet()) {
             if (entry.getValue().in(random)) {
                 ant.setDirection(entry.getKey());
                 Point point = ant.getPosition().getCopy();
@@ -172,7 +172,7 @@ public class AntMagicMoveBehaviour implements MoveBehaviour {
         calcRandomDirection();
     }
 
-    private void addDirectionIfCan(double[][] pheromonMap, HashMap<Direction, DirectionValues> directions, Direction direction) {
+    private void addDirectionIfCan(double[][] pheromonMap, HashMap<Directions, DirectionValues> directions, Directions direction) {
         Point point = ant.getPosition().getCopy();
         context.movePointOnDirection(direction, point);
         if (context.canMoveToPoint(point)) {
@@ -274,13 +274,13 @@ public class AntMagicMoveBehaviour implements MoveBehaviour {
     }
 
     private void calcRotation() {
-        if (ant.getDirection() == Direction.WEST) {
+        if (ant.getDirection() == Directions.LEFT) {
             ant.setRotation(90f);
-        } else if (ant.getDirection() == Direction.NORTH) {
+        } else if (ant.getDirection() == Directions.UP) {
             ant.setRotation(0f);
-        } else if (ant.getDirection() == Direction.EAST) {
+        } else if (ant.getDirection() == Directions.RIGHT) {
             ant.setRotation(270f);
-        } else if (ant.getDirection() == Direction.SOUTH) {
+        } else if (ant.getDirection() == Directions.DOWN) {
             ant.setRotation(180f);
         }
     }
@@ -288,13 +288,13 @@ public class AntMagicMoveBehaviour implements MoveBehaviour {
     private void randomDirection() {
         double random = Math.random();
         if (random > 0.75f) {
-            ant.setDirection(Direction.SOUTH);
+            ant.setDirection(Directions.DOWN);
         } else if (random > 0.5f) {
-            ant.setDirection(Direction.WEST);
+            ant.setDirection(Directions.LEFT);
         } else if (random > 0.25f) {
-            ant.setDirection(Direction.NORTH);
+            ant.setDirection(Directions.UP);
         } else {
-            ant.setDirection(Direction.EAST);
+            ant.setDirection(Directions.RIGHT);
         }
     }
 

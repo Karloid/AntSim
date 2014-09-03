@@ -61,7 +61,7 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
             return;
         }
         Point nextPoint = path.get(indexCurrentPos + 1);
-        Direction direction = context.getDirectionByPoints(ant.getPosition(), nextPoint);
+        Directions direction = context.getDirectionByPoints(ant.getPosition(), nextPoint);
         ant.setDirection(direction);
         ant.setAction(Action.MOVE);
     }
@@ -125,18 +125,18 @@ public class AntAStarMoveBehaviour implements MoveBehaviour {
 
     private List<Node> getNeighbors(Node node) {
         List<Node> neighbors = new ArrayList<Node>();
-        Direction direction = Direction.NORTH;
+        Directions direction = Directions.UP;
         addPointIfCan(direction, node, neighbors);
-        direction = Direction.WEST;
+        direction = Directions.LEFT;
         addPointIfCan(direction, node, neighbors);
-        direction = Direction.EAST;
+        direction = Directions.RIGHT;
         addPointIfCan(direction, node, neighbors);
-        direction = Direction.SOUTH;
+        direction = Directions.DOWN;
         addPointIfCan(direction, node, neighbors);
         return neighbors;
     }
 
-    private void addPointIfCan(Direction direction, Node node, List<Node> neighbors) {
+    private void addPointIfCan(Directions direction, Node node, List<Node> neighbors) {
         Point point = node.getPosition().getCopy();
         context.movePointOnDirection(direction, point);
         if (context.canMoveToPoint(point)) {

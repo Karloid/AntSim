@@ -10,6 +10,7 @@ import java.util.*;
  * Created by Andrey on 5/17/2014.
  */
 public class AStarPathCalcer implements PathCalcer {
+    public static final int INITIAL_CAPACITY = 300;
     private PolygonsWorld context;
     private double length;
 
@@ -43,7 +44,7 @@ public class AStarPathCalcer implements PathCalcer {
     private void aStarCalc() {
         goalPosition = context.getEndPoint();
         closedNodes = new ArrayList<Node>();
-        openNodes = new PriorityQueue<Node>(300, new Comparator<Node>() {
+        openNodes = new PriorityQueue<Node>(INITIAL_CAPACITY, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
                 if (o1.getF() < o2.getF()) {
@@ -58,7 +59,8 @@ public class AStarPathCalcer implements PathCalcer {
         startNode = new Node(context.getStartPoint());
         calcF(startNode);
         openNodes.add(startNode);
-        while (!openNodes.peek().getPosition().equals(goalPosition) && !(openNodes.peek().getParentsCount() > MAX_LENGTH_PATH)) {
+        while (!openNodes.peek().getPosition().equals(goalPosition)
+                && !(openNodes.peek().getParentsCount() > MAX_LENGTH_PATH)) {
             //  System.out.println("openNodes count: " + openNodes.size());
             Node current = openNodes.peek();
             openNodes.remove(current);
@@ -133,7 +135,7 @@ public class AStarPathCalcer implements PathCalcer {
     private void calcF(Node node) {
         //  double heuristik = getManhattanDistance(node.getPosition(), goalPosition);
         double heuristik = getEuclideDistance(node.getPosition(), goalPosition);
-        double pathCost = (node.getParent() == null ? 0 : node.getParent().getG()
+        double pathCost = (node.getParent() == null ? 0  : node.getParent().getG()
                 + context.getLink(node.getPosition(), node.getParent().getPosition()).getLength());
         double f = heuristik + pathCost;
         node.setF(f);

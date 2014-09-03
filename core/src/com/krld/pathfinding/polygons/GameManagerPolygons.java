@@ -7,7 +7,7 @@ import com.krld.pathfinding.polygons.model.PolygonsWorld;
  */
 public class GameManagerPolygons {
     public static final int WIDTH = 1200;
-    public static final int HEIGHT = 800;
+    public static final int HEIGHT = 700;
 
     public static PolygonsView getNewGameView() {
         PolygonsView polygonsView = new PolygonsView();

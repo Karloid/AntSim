@@ -7,7 +7,7 @@ public class Ant {
     private MoveBehaviour moveBehaviour;
     private final MyGame context;
     private final Nest nest;
-    private Direction direction;
+    private Directions direction;
     private Point position;
     private float rotation;
     private Action action;
@@ -47,7 +47,7 @@ public class Ant {
         this.action = action;
     }
 
-    public Direction getDirection() {
+    public Directions getDirection() {
         return direction;
     }
 
@@ -55,7 +55,7 @@ public class Ant {
         this.rotation = rotation;
     }
 
-    public void setDirection(Direction direction) {
+    public void setDirection(Directions direction) {
         this.direction = direction;
     }
 

@@ -26,6 +26,7 @@ public class PolygonWorldRenderer {
     private BitmapFont font;
     private PolygonsWorld context;
     private boolean showNodeF;
+    private boolean disableViewGraphs = true;
 
     public PolygonWorldRenderer(PolygonsWorld context) {
         setContext(context);
@@ -118,7 +119,9 @@ public class PolygonWorldRenderer {
             Iterator<Point> iter = link.getPoints().iterator();
             Point point1 = iter.next();
             Point point2 = iter.next();
-            shapeRenderer.line(point1.getX(), point1.getY(), point2.getX(), point2.getY());
+            if (disableViewGraphs) {
+                shapeRenderer.line(point1.getX(), point1.getY(), point2.getX(), point2.getY());
+            }
         }
         shapeRenderer.end();
         batch.begin();
