@@ -119,7 +119,7 @@ public class PolygonWorldRenderer {
             Iterator<Point> iter = link.getPoints().iterator();
             Point point1 = iter.next();
             Point point2 = iter.next();
-            if (disableViewGraphs) {
+            if (!disableViewGraphs) {
                 shapeRenderer.line(point1.getX(), point1.getY(), point2.getX(), point2.getY());
             }
         }
